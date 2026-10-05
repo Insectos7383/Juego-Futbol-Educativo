@@ -776,6 +776,10 @@ input{user-select:text;-webkit-user-select:text}
   .controls button{margin:2px;padding:10px 12px}
 }
 </style>
+<style>
+/* V25.58 - cambio solicitado: ocultar portero contrario y dejar solo S1 en las casillas de saques */
+#finalOpponentKeeper,#finalOpponentLabel,#finalKeeperEight{display:none!important;}
+</style>
 </head>
 <body>
 <h1>⚽ BAIROA FUTBOL CLUB ⚽</h1>
@@ -807,7 +811,7 @@ input{user-select:text;-webkit-user-select:text}
    <button class="hot" id="pDef" onclick="pickPass('DEFENSA')"></button>
    <button class="hot" id="pMed" onclick="pickPass('MEDIOCAMPISTA')"></button>
    <button class="hot" id="pDel" onclick="pickPass('DELANTERO')"></button>
-   <div id="pBall">⚽</div><button id="shoot" onclick="scoreGoal()">🥅<br>TIRAR</button><div id="goal">¡GOOOOOOOL!</div>
+   <div id="pBall">⚽</div><button id="shoot" onclick="scoreGoal()">👟 ⚽</button><div id="goal">¡GOOOOOOOL!</div>
  </div>
  <div class="controls"><button class="start" onclick="startPasses()">▶ COMENZAR</button><button class="repeat" onclick="repeatPass()">🔊 REPETIR</button><button class="reset" onclick="resetPasses()">↻ REINICIAR</button><button class="home" onclick="goHome()">🏠 MENÚ</button></div>
 </section>
@@ -894,7 +898,7 @@ function pickPass(n){
   if(n===4) document.body.classList.add("kick-s4");
   if(n===5) document.body.classList.add("kick-s5");
 if(!pplaying||pwaiting||plocked)return;if(n!==pseq[pstep][0]){plocked=true;$("pMsg").textContent="🙂 Inténtalo otra vez.";return pspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>plocked=false)}plocked=true;ps++;$("pStars").textContent=ps;$("pMsg").textContent="⭐ ¡MUY BIEN! ¡EXCELENTE PASE!";let q={DEFENSA:["34%","38%"],MEDIOCAMPISTA:["39%","76%"],DELANTERO:["65%","46%"]}[n];$("pBall").style.left=q[0];$("pBall").style.top=q[1];setTimeout(()=>pspeak("¡Muy bien! Excelente pase.",()=>setTimeout(()=>{pstep++;plocked=false;pstep<3?showPass():readyShot()},650)),1150)}
-function readyShot(){pplaying=false;pwaiting=true;plocked=false;$("pInst").textContent="🎯 DELANTERO: ¡TIRA A LA PORTERÍA!";$("pMsg").textContent="🥅 Toca el botón amarillo TIRAR";$("shoot").style.display="block";pspeak("Delantero. Ahora tira a la portería.")}
+function readyShot(){pplaying=false;pwaiting=true;plocked=false;$("pInst").textContent="🎯 DELANTERO: ¡TIRA A LA PORTERÍA!";$("pMsg").textContent="👟⚽ Toca el botón amarillo con el zapato y el balón";$("shoot").style.display="block";pspeak("Delantero. Ahora tira a la portería.")}
 function scoreGoal(){if(!pwaiting||plocked)return;plocked=true;pwaiting=false;$("shoot").style.display="none";$("pBall").style.left="94%";$("pBall").style.top="49%";setTimeout(()=>{ps+=3;$("pStars").textContent=ps;let nm=name();$("pInst").textContent="⚽⚽⚽ ¡GOOOOOOOL! ⚽⚽⚽";$("pMsg").textContent="🏆 ¡EXCELENTE JUGADA! +3 ESTRELLAS 🏆";$("goal").textContent=nm?"¡GOOOOOOOL DE "+nm.toUpperCase()+"!":"¡GOOOOOOOL!";$("goal").style.display="block";pspeak(nm?"¡Góóóóóóóóóóóól de "+nm+"!":"¡Góóóóóóóóóóóól!",null,.32)},1150)}
 function repeatPass(){if(plast)pspeak(plast);else pspeak("Presiona comenzar.")}
 function pHome(){$("pBall").style.left="18.2%";$("pBall").style.top="62%"}
@@ -905,8 +909,8 @@ const kicks=[
  {n:1,place:"CENTRO",method:"PIE",placeText:"en el centro de la cancha, dentro del círculo central",methodText:"con el pie",ball:["49%","47%"]},
  {n:2,place:"LATERAL",method:"MANOS",placeText:"fuera de la línea blanca lateral",methodText:"con las manos",ball:["48%","3%"]},
  {n:3,place:"ESQUINA",method:"PIE",placeText:"en la esquina de la cancha del equipo contrario",methodText:"con el pie",ball:["94%","4%"]},
- {n:4,place:"META4",method:"MANOS",placeText:"en la zona de la meta propia",methodText:"con las manos",ball:["12%","50%"]},
- {n:5,place:"META5",method:"PIE",placeText:"en la zona de la meta propia",methodText:"con el pie",ball:["12%","50%"]}
+ {n:4,place:"META4",method:"MANOS",placeText:"desde el área frente a la portería",methodText:"con las manos",ball:["12%","50%"]},
+ {n:5,place:"META5",method:"PIE",placeText:"desde el área frente a la portería",methodText:"con el pie",ball:["12%","50%"]}
 ];
 let si=0,ss=0,sphase="idle",slocked=false,slast="";
 function sspeak(t,d){slast=t;speak(t,d)}
@@ -1164,11 +1168,11 @@ q:"¿Con qué hacemos el saque de banda?",choices:["🙌 CON LAS MANOS","👟 CO
  3:{title:"S3 – SAQUE DE ESQUINA",steps:["1. Coloca la pelota en la esquina del lado contrario.","2. Mira dónde están tus compañeros.","3. Toma un poco de impulso.","4. Golpea la pelota con el pie hacia un compañero."],
  speech:"Saque de esquina. Coloca la pelota en la esquina, mira a tus compañeros y golpéala con el pie hacia uno de ellos.",
  q:"¿Desde dónde se hace?",choices:["🚩 DESDE LA ESQUINA","⭕ DESDE EL CENTRO"],correct:0,start:["91%","85%"],ball:["95%","91%"],target:["72%","67%"]},
- 4:{title:"S4 – SAQUE DE META CON LAS MANOS",steps:["1. El portero se coloca cerca de su portería.","2. Sujeta bien la pelota con las manos.","3. Busca a un defensa libre.","4. Lanza la pelota con las manos hacia el defensa."],
- speech:"Saque de meta con las manos. El portero busca a un defensa libre y le lanza la pelota con las manos.",
+ 4:{title:"S4 – SAQUE DE META CON LAS MANOS",steps:["1. El saque se hace desde el área frente a la portería.","2. Sujeta bien la pelota con las manos.","3. Busca a un defensa libre.","4. Lanza la pelota con las manos hacia el defensa."],
+ speech:"Saque de meta con las manos. Se saca desde el área frente a la portería. El portero busca a un defensa libre y le lanza la pelota con las manos.",
  q:"¿Con qué hacemos este saque?",choices:["🙌 CON LAS MANOS","👟 CON EL PIE"],correct:0,start:["10%","50%"],ball:["12%","50%"],target:["31%","50%"]},
- 5:{title:"S5 – SAQUE DE META CON EL PIE",steps:["1. Coloca la pelota en el área de meta.","2. Mira dónde está tu defensa.","3. Toma impulso sin apresurarte.","4. Golpea la pelota con el pie hacia el defensa."],
- speech:"Saque de meta con el pie. Coloca la pelota en el área de meta, mira a tu defensa y pásala con el pie.",
+ 5:{title:"S5 – SAQUE DE META CON EL PIE",steps:["1. El saque se hace desde el área frente a la portería.","2. Mira dónde está tu defensa.","3. Toma impulso sin apresurarte.","4. Golpea la pelota con el pie hacia el defensa."],
+ speech:"Saque de meta con el pie. Se saca desde el área frente a la portería. Mira a tu defensa y pásala con el pie.",
  q:"¿Con qué se envía la pelota?",choices:["🦶 CON EL PIE","🙌 CON LAS MANOS"],correct:0,start:["10%","55%"],ball:["15%","55%"],target:["34%","55%"]}
 };
 let currentKick=1;
@@ -1598,6 +1602,9 @@ document.addEventListener("DOMContentLoaded", function(){
 .finalOption{font-size:17px;font-weight:900;padding:10px 16px;border:3px solid #222;border-radius:12px;background:white;cursor:pointer}
 .finalOption:hover{transform:scale(1.04)}
 #finalScore{display:inline-block;background:#fff1b8;border:3px solid #222;border-radius:12px;padding:7px 16px;font-size:18px;font-weight:900;color:#10257e}
+#finalHistory{display:none;max-width:560px;margin:8px auto;padding:10px;background:#fff;border:3px solid #10257e;border-radius:12px;text-align:left;font-size:15px;font-weight:800;color:#10257e}
+#finalHistory h3{margin:0 0 7px;text-align:center}
+.finalHistoryRow{padding:5px 3px;border-bottom:1px solid #ddd}
 #finalCue{position:absolute;display:none;z-index:14;font-size:46px;line-height:1;filter:drop-shadow(1px 2px 1px #333)}
 #finalOpponentKeeper{position:absolute;right:4.2%;top:36%;height:30%;width:auto;z-index:10;display:none;transform:scaleX(-1);filter:drop-shadow(2px 3px 2px rgba(0,0,0,.35));pointer-events:none}
 #finalOpponentLabel{position:absolute;right:1.8%;top:66%;z-index:13;display:none;font-size:12px;font-weight:1000;color:#111;background:#fff;border:2px solid #111;border-radius:8px;padding:2px 6px;pointer-events:none;white-space:nowrap}
@@ -1607,7 +1614,8 @@ document.addEventListener("DOMContentLoaded", function(){
 </style>
 <section id="finalScreen" class="screen">
  <div class="finalWrap">
-  <div id="finalScore">⭐ ESTRELLAS: <span id="finalStars">0</span> &nbsp; | &nbsp; PREGUNTA: <span id="finalRound">—</span>/18</div>
+  <div id="finalScore">ACIERTOS: <span id="finalStars">0</span>/18 🌟 &nbsp; | &nbsp; FALLOS: <span id="finalFails">0</span> ❌ &nbsp; | &nbsp; PREGUNTA: <span id="finalRound">—</span>/18</div>
+  <div id="finalHistory"></div>
   <div id="finalQuestion">Presiona COMENZAR para iniciar el Partido Final</div>
   <div id="finalMsg">Aquí usarás todo lo que aprendiste.</div>
   <div id="finalField">
@@ -1624,11 +1632,11 @@ document.addEventListener("DOMContentLoaded", function(){
   </div>
   <div id="finalOptions"></div>
   <div id="finalCelebration">⚽ ¡GOOOOOOOL! 🏆</div>
-  <div class="controls"><button class="start" onclick="startFinalGame()">▶ COMENZAR</button><button class="repeat" onclick="repeatFinalQuestion()">🔊 REPETIR</button><button class="reset" onclick="resetFinalGame()">↻ REINICIAR</button><button class="home" onclick="goHomeFromFinal()">🏠 MENÚ</button></div>
+  <div class="controls"><button class="start" onclick="startFinalGame()">▶ COMENZAR</button><button class="repeat" onclick="repeatFinalQuestion()">🔊 REPETIR</button><button class="reset" onclick="resetFinalGame()">↻ REINICIAR</button><button class="repeat" onclick="toggleFinalHistory()">📅 MIS RESULTADOS</button><button class="home" onclick="goHomeFromFinal()">🏠 MENÚ</button></div>
  </div>
 </section>
 <script>
-let finalStep=-1,finalStars=0,finalLocked=false,finalLast="";
+let finalStep=-1,finalStars=0,finalFails=0,finalLocked=false,finalLast="";
 let finalTimers=[];
 function finalLater(fn,ms){const id=setTimeout(()=>{finalTimers=finalTimers.filter(x=>x!==id);fn()},ms);finalTimers.push(id);return id}
 function clearFinalTimers(){finalTimers.forEach(clearTimeout);finalTimers=[]}
@@ -1639,7 +1647,7 @@ const finalQuestions=[
  {q:"¿Con qué se hace el saque inicial?",type:"option",ans:"PIE",opts:["PIE","MANOS"],icons:true},
  {q:"¿Hacia quién se hace el pase inicial?",type:"option",ans:"MEDIOCAMPISTA",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA"]},
  {q:"El mediocampista recibió la pelota. ¿A quién debe devolvérsela?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","DELANTERO"]},
- {q:"El delantero se acerca a la portería con toques cortos. ¿Qué debe hacer ahora?",type:"option",ans:"TIRAR",opts:["TIRAR","PASAR","RETROCEDER"]},
+ {q:"El delantero se acerca a la portería con toques cortos. ¿Qué debe hacer ahora?",type:"option",ans:"👟 ⚽",opts:["👟 ⚽","PASAR","RETROCEDER"]},
  {q:"El portero contrario atrapó la pelota. ¿Quién tiene ahora la pelota?",type:"option",ans:"PORTERO CONTRARIO",opts:["DELANTERO","MEDIOCAMPISTA","PORTERO CONTRARIO"]},
  {q:"El portero atrapó la pelota. ¿Cuál saque debe hacer?",type:"option",ans:"S4",opts:["S3","S4","S5"]},
  {q:"¿Con qué se hace el saque S4?",type:"option",ans:"MANOS",opts:["PIE","MANOS"],icons:true},
@@ -1655,14 +1663,14 @@ const finalQuestions=[
 function finalSpeak(t,done){finalLast=t;speak(t,done)}
 function openFinalGame(){speechSynthesis.cancel();document.getElementById('activity4').style.display='none';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('finalScreen').classList.add('active');resetFinalGame();refreshPlayerIdentity();refreshClubBrand();window.scrollTo(0,0)}
 function goHomeFromFinal(){speechSynthesis.cancel();clearFinalTimers();resetFinalGame();showScreen('menuScreen');window.scrollTo(0,0)}
-function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalLocked=false;$('finalStars').textContent='0';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
-function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;$('finalStars').textContent='0';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
+function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalFails=0;finalLocked=false;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
+function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;finalFails=0;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
 function repeatFinalQuestion(){if(finalLast)finalSpeak(finalLast)}
 function hideFinalHots(){document.querySelectorAll('.finalHot').forEach(x=>x.style.display='none')}
 function finalLabel(o,z){if(z.icons){if(o==='PIE')return '👟';if(o==='MANOS')return '✋'}return o}
 function showFinalQuestion(){hideFinalCue();if(finalStep>=finalQuestions.length)return finishFinalGame();finalLocked=false;hideFinalHots();$('finalOptions').innerHTML='';$('finalRound').textContent=finalStep+1;let z=finalQuestions[finalStep];$('finalQuestion').textContent=z.q;$('finalMsg').textContent=z.type==='place'?'👆 Toca el lugar correcto en la cancha.':'Escoge la respuesta correcta.';if(z.type==='place'){let ids={CENTRO:'finalCenter',DEFENSA:'finalDefense',MEDIOCAMPISTA:'finalMid',DELANTERO:'finalForward',PORTERIA:'finalGoal'};$(ids[z.ans]).style.display='block'}else{z.opts.forEach(o=>{let b=document.createElement('button');b.className='finalOption';b.textContent=finalLabel(o,z);if(z.icons)b.style.fontSize='34px';b.onclick=()=>finalAnswer(o);$('finalOptions').appendChild(b)})}finalSpeak(z.q)}
 function finalPickPlace(v){if(finalStep<0||finalLocked)return;let z=finalQuestions[finalStep];if(z.type!=='place')return;finalAnswer(v)}
-function finalAnswer(v){if(finalLocked)return;let z=finalQuestions[finalStep];if(v!==z.ans){finalLocked=true;$('finalMsg').textContent='🙂 Esa no es la respuesta correcta. Inténtalo otra vez.';return finalSpeak('Esa no es la respuesta correcta. Inténtalo otra vez.',()=>{finalLocked=false})}finalLocked=true;finalStars++;$('finalStars').textContent=finalStars;$('finalMsg').textContent='⭐ ¡MUY BIEN! ¡CORRECTO!';animateFinalStep(finalStep);finalSpeak('¡Muy bien! ¡Correcto!',()=>advanceFinal(finalStep))}
+function finalAnswer(v){if(finalLocked)return;let z=finalQuestions[finalStep];if(v!==z.ans){finalLocked=true;finalFails++;$('finalFails').textContent=finalFails;$('finalMsg').textContent='🙂 Esa no es la respuesta correcta. Inténtalo otra vez.';return finalSpeak('Esa no es la respuesta correcta. Inténtalo otra vez.',()=>{finalLocked=false})}finalLocked=true;finalStars++;$('finalStars').textContent=finalStars;$('finalMsg').textContent='⭐ ¡MUY BIEN! ¡CORRECTO!';animateFinalStep(finalStep);finalSpeak('¡Muy bien! ¡Correcto!',()=>advanceFinal(finalStep))}
 function moveFinalBall(l,t,d=900){$('finalBall').style.transitionDuration=d+'ms';$('finalBall').style.left=l;$('finalBall').style.top=t}
 function animateFinalStep(i){if(i===0)moveFinalBall('49%','47%');if(i===4)moveFinalBall('42%','66%');if(i===5)moveFinalBall('67%','42%')}
 function nextFinal(delay=650){finalLater(()=>{finalStep++;showFinalQuestion()},delay)}
@@ -1677,19 +1685,24 @@ function advanceFinal(i){
  if(i===6){playGoalThenKeeperCatch();return}
  if(i===10){simulateKeeperThrow();return}
  if(i===14){simulateKeeperKick();return}
+ if(i===16){simulateCornerCause();return}
  nextFinal();
 }
 function playGoalThenKeeperCatch(){
+ clearFinalTimers();
  $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
  $('finalOptions').innerHTML='';$('finalQuestion').textContent='¡TIRA A LA PORTERÍA!';$('finalMsg').textContent='🥅 El delantero le pega con el pie...';
  moveFinalBall('95%','47%',700);
- setTimeout(()=>{$('finalCelebration').style.display='block';$('finalMsg').textContent='⚽ ¡GOOOOOOOL!';finalSpeak('¡Góóóóóóóóóól! ¡Muy bien!',()=>{});},800);
- // Pausa larga para disfrutar la celebración antes de anunciar la próxima jugada.
- setTimeout(()=>{$('finalCelebration').style.display='none';$('finalQuestion').textContent='Ahora haremos otra jugada';$('finalMsg').textContent='⚽ Esta vez el portero contrario atrapará el tiro.';finalSpeak('Ahora haremos otra jugada. Esta vez el portero contrario atrapará el tiro.');},4800);
- setTimeout(()=>{moveFinalBall('67%','42%',250);},6800);
- setTimeout(()=>moveFinalBall('76%','54%',420),7200);setTimeout(()=>moveFinalBall('84%','44%',420),7700);
- setTimeout(()=>{moveFinalBall('91%','47%',550);$('finalQuestion').textContent='¡EL PORTERO ATRAPÓ LA PELOTA!';$('finalMsg').textContent='🧤 Antes de hacer el saque, contesta las preguntas.';finalSpeak('El portero atrapó la pelota. Antes de hacer el saque, contesta las preguntas.');},8200);
- setTimeout(()=>{finalStep++;showFinalQuestion()},10000);
+ finalLater(()=>{
+   $('finalCelebration').style.display='block';
+   let nm=name();
+   let goalText=nm?'⚽ ¡GOOOOOOOL! 🏆  ¡'+nm.toUpperCase()+', MUY BIEN, EXCELENTE!':'⚽ ¡GOOOOOOOL! 🏆';
+   $('finalQuestion').textContent=goalText;
+   $('finalMsg').textContent=nm?'¡'+nm.toUpperCase()+', MUY BIEN, EXCELENTE!':'⚽ ¡GOOOOOOOL!';
+   finalLocked=true;
+   finalSpeak(nm?'¡Góóóóóóóóóóóól! ¡'+nm+', muy bien, excelente!':'¡Góóóóóóóóóóóól!',()=>{});
+ },800);
+ // FIN DEL PARTIDO FINAL: se detiene aquí después del primer gol.
 }
 function simulateKeeperThrow(){
  clearFinalTimers();
@@ -1703,9 +1716,10 @@ function simulateKeeperThrow(){
  finalLater(()=>moveFinalBall('67%','42%',250),7000);
  finalLater(()=>moveFinalBall('78%','55%',420),7500);
  finalLater(()=>moveFinalBall('86%','43%',420),8000);
- finalLater(()=>{moveFinalBall('97%','22%',650);$('finalQuestion').textContent='¡LA PELOTA SALIÓ POR LA LÍNEA DE META!';$('finalMsg').textContent='🥅 Observa: el tiro pasó por un lado de la portería.';finalSpeak('La pelota salió por la línea de meta.');},8500);
- // Pausa larga fuera del campo y un único regreso al área de portería.
- finalLater(()=>{moveFinalBall('91%','55%',900);$('finalQuestion').textContent='El balón regresa al área de portería';$('finalMsg').textContent='🥅 El PORTERO CONTRARIO se prepara para el S5.';},12200);
+ // V25.60: el balón continúa directamente desde el tiro hasta cruzar la línea de meta.
+ finalLater(()=>{moveFinalBall('98%','22%',650);$('finalQuestion').textContent='¡LA PELOTA SALIÓ POR LA LÍNEA DE META!';$('finalMsg').textContent='🥅 Observa: el tiro pasó por un lado de la portería.';},8500);
+ // Después de verse fuera, se coloca en el pie del portero para comenzar S5.
+ finalLater(()=>{moveFinalBall('91%','55%',250);$('finalQuestion').textContent='El portero contrario prepara el saque';$('finalMsg').textContent='👟 El balón queda en el pie del PORTERO CONTRARIO para el S5.';},12200);
  finalLater(()=>{finalStep++;showFinalQuestion()},14000);
 }
 function simulateKeeperKick(){
@@ -1713,12 +1727,28 @@ function simulateKeeperKick(){
  $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
  $('finalOptions').innerHTML='';$('finalQuestion').textContent='S5 · SAQUE CON EL PIE';$('finalMsg').textContent='👟 PORTERO CONTRARIO: saque S5 con el pie hacia el campo.';
  moveFinalBall('91%','55%',250);showFinalCue('👟','95%','51%');
- // Una sola animación de S5.
  finalLater(()=>moveFinalBall('68%','60%',1000),750);
- // Pausa larga y luego continúa UNA sola vez.
- finalLater(()=>{hideFinalCue();finalStep++;showFinalQuestion()},4500);
+ // V25.60: nueva jugada visual que provoca S2.
+ finalLater(()=>{hideFinalCue();$('finalQuestion').textContent='Ahora observa cómo se provoca el S2';$('finalMsg').textContent='⚽ El PORTERO CONTRARIO juega el balón hacia una banda lateral.';moveFinalBall('90%','50%',300);},4300);
+ finalLater(()=>moveFinalBall('78%','35%',450),4900);
+ finalLater(()=>moveFinalBall('64%','16%',450),5450);
+ finalLater(()=>{moveFinalBall('55%','-7%',650);$('finalQuestion').textContent='¡LA PELOTA SALIÓ POR LA LÍNEA LATERAL!';$('finalMsg').textContent='🙌 Ahora corresponde el saque de banda S2.';},6000);
+ finalLater(()=>{finalStep++;showFinalQuestion()},8200);
 }
-function finishFinalGame(){hideFinalHots();$('finalOptions').innerHTML='<button class="finalOption" onclick="restartFinalCelebration()">🏆 CELEBRAR</button>';$('finalQuestion').textContent='¡PARTIDO FINAL COMPLETADO!';$('finalMsg').textContent='⭐ Practicaste S1, una jugada de gol, S4, S5, S2 y S3.';finalSpeak('¡Excelente! Completaste el partido final.')}
+function simulateCornerCause(){
+ clearFinalTimers();hideFinalCue();
+ $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
+ $('finalOptions').innerHTML='';$('finalQuestion').textContent='Ahora observa cómo se provoca el S3';$('finalMsg').textContent='⚽ El delantero tira y el PORTERO CONTRARIO desvía el balón con las manos.';
+ moveFinalBall('67%','47%',300);
+ finalLater(()=>moveFinalBall('82%','47%',600),650);
+ finalLater(()=>{moveFinalBall('91%','43%',500);showFinalCue('🙌','93%','39%');},1350);
+ finalLater(()=>{hideFinalCue();moveFinalBall('98%','16%',750);$('finalQuestion').textContent='¡EL PORTERO LA DESVIÓ FUERA!';$('finalMsg').textContent='🚩 Salió por la línea de meta, fuera de la portería: corresponde S3.';},2050);
+ finalLater(()=>{finalStep++;showFinalQuestion()},4800);
+}
+function finalHistoryData(){try{return JSON.parse(localStorage.getItem('bairoaFinalScores')||'[]')}catch(_){return []}}
+function saveFinalScore(){let h=finalHistoryData();h.unshift({date:new Date().toLocaleDateString('es-PR'),stars:finalStars,fails:finalFails,total:finalQuestions.length});h=h.slice(0,20);localStorage.setItem('bairoaFinalScores',JSON.stringify(h))}
+function toggleFinalHistory(){let box=$('finalHistory');if(box.style.display==='block'){box.style.display='none';return}let h=finalHistoryData();box.innerHTML='<h3>📅 MIS RESULTADOS · META: 0 ❌</h3>'+(h.length?h.map(x=>'<div class="finalHistoryRow">'+x.date+' — '+x.stars+'/'+(x.total||18)+' 🌟 — '+x.fails+' ❌'+(x.fails===0?' 🏆':'')+'</div>').join(''):'<div class="finalHistoryRow">Todavía no hay partidos guardados.</div>');box.style.display='block'}
+function finishFinalGame(){hideFinalHots();saveFinalScore();$('finalOptions').innerHTML='<button class="finalOption" onclick="restartFinalCelebration()">🏆 CELEBRAR</button><button class="finalOption" onclick="toggleFinalHistory()">📅 MIS RESULTADOS</button>';$('finalQuestion').textContent=finalFails===0?'🏆 ¡PARTIDO PERFECTO! 0 ❌':'¡PARTIDO FINAL COMPLETADO!';$('finalMsg').textContent='🌟 ACIERTOS: '+finalStars+'/'+finalQuestions.length+'   |   ❌ FALLOS: '+finalFails+(finalFails===0?' — ¡META LOGRADA!':' — META: llegar a 0 ❌');finalSpeak(finalFails===0?'¡Excelente! Partido perfecto. Cero fallos.':'¡Excelente! Completaste el partido final. Sigue practicando para llegar a cero fallos.')}
 function restartFinalCelebration(){$('finalCelebration').style.display='block';finalSpeak('¡Excelente! ¡Muy bien!')}
 </script>
 
@@ -1747,11 +1777,52 @@ if ('serviceWorker' in navigator) {
 
 <script>
 try {
-  localStorage.removeItem("bairoaPlayerName");
-  localStorage.removeItem("bairoaPlayerNumber");
+  localStorage.removeItem('bairoaPlayerName');
+  localStorage.removeItem('bairoaPlayerNumber');
 } catch (e) {}
 </script>
 
+
+<style id="v2564-global-score-style">
+.globalScore{display:block;width:min(920px,94vw);margin:7px auto;padding:7px 12px;background:#fff1b8;border:3px solid #222;border-radius:12px;font-size:18px;font-weight:900;color:#10257e;text-align:center}
+@media(max-width:760px){.globalScore{font-size:14px;padding:6px 8px;border-width:2px}}
+</style>
+<script id="v2564-global-score">
+(function(){
+ let gStars=0,gCorrect=0,gFails=0;
+ function hudHTML(){return '⭐ ESTRELLAS: <span class="gStars">'+gStars+'</span> &nbsp; | &nbsp; ACIERTOS: <span class="gCorrect">'+gCorrect+'</span>/18 🌟 &nbsp; | &nbsp; FALLOS: <span class="gFails">'+gFails+'</span> ❌ &nbsp; | &nbsp; PREGUNTA: <span class="gQuestion">'+Math.min(gCorrect+1,18)+'</span>/18';}
+ function render(){document.querySelectorAll('.globalScore').forEach(x=>x.innerHTML=hudHTML())}
+ function addCorrect(stars){gCorrect++;gStars+=(stars||1);render()}
+ function addFail(){gFails++;render()}
+ function installHUD(){
+   ['menuScreen','passesScreen','kicksScreen','movesScreen','finalScreen'].forEach(id=>{let host=document.getElementById(id);if(host&&!host.querySelector('.globalScore')){let d=document.createElement('div');d.className='globalScore';host.insertBefore(d,host.firstChild)}});
+   let a4=document.getElementById('activity4');if(a4&&!a4.querySelector('.globalScore')){let d=document.createElement('div');d.className='globalScore';a4.insertBefore(d,a4.firstChild)}
+   document.querySelectorAll('#passesScreen .panel.score,#kicksScreen .panel.score,#movesScreen .panel.score,#finalScore').forEach(x=>x.style.display='none');render();
+ }
+ function wrap(name,fn){let old=window[name];if(typeof old==='function')window[name]=function(){return fn.call(this,old,arguments)}}
+ window.addEventListener('load',function(){
+   installHUD();
+   wrap('pickPass',function(old,a){let ok=pplaying&&!pwaiting&&!plocked&&a[0]===pseq[pstep][0];let bad=pplaying&&!pwaiting&&!plocked&&!ok;let r=old.apply(this,a);if(ok)addCorrect(1);else if(bad)addFail();return r});
+   wrap('scoreGoal',function(old,a){let ok=pwaiting&&!plocked;let r=old.apply(this,a);if(ok)addCorrect(3);return r});
+   wrap('choosePlace',function(old,a){let active=sphase==='place'&&!slocked;let ok=active&&a[0]===kicks[si].place;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('chooseMethod',function(old,a){let active=sphase==='method'&&!slocked;let ok=active&&a[0]===kicks[si].method;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('practiceMove',function(old,a){let active=currentPos&&!mLocked;let ok=active&&moveData[currentPos].allowed.includes(a[0]);let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('answerKick',function(old,a){let active=!!currentKick;let ok=active&&(currentKick===1||a[0]===kickLessons[currentKick].correct);let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('finalAnswer',function(old,a){let active=finalStep>=0&&!finalLocked;let z=active?finalQuestions[finalStep]:null;let ok=active&&a[0]===z.ans;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   // Reiniciar una sección NO borra el marcador general; se conserva hasta cerrar/recargar la sesión.
+ });
+})();
+</script>
+
+<!-- V25.68 - restaura S1-S5 en práctica + crédito familiar corregido + sistema de actualización -->
+
+<style id="v2567-family-credit-style">
+  body{padding-bottom:42px !important;}
+  #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
+  @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
+</style>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos de Bairoa Fútbol Club ⚽</div>
+<script src="actualizador.js"></script>
 </body></html>
 <style>
 /* V25.52 - Responsive: PC + iPhone + Android */
