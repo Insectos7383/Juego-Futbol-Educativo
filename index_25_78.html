@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>Mi Juego de Fútbol</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c9efff">
+<meta name="apple-mobile-web-app-title" content="Bairoa Fútbol">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#c9efff;font-family:Arial,Helvetica,sans-serif;text-align:center;color:#14247d}
+h1{margin:8px;color:#ffd719;-webkit-text-stroke:2px #111;font-size:34px}
+.screen{display:none}.screen.active{display:block}
+
+/* V25.42 - Dos logos laterales SOLO en la pantalla inicial */
+#menuScreen{
+  position:relative;
+  isolation:isolate;
+  min-height:calc(100vh - 60px);
+}
+#menuScreen::before,#menuScreen::after{
+  content:"";
+  position:absolute;
+  top:255px;
+  width:min(250px,18vw);
+  aspect-ratio:1/1;
+  background:url("bairoa_logo.jpg") center/contain no-repeat;
+  opacity:.30;
+  z-index:-1;
+  pointer-events:none;
+}
+#menuScreen::before{left:18px}
+#menuScreen::after{right:18px}
+#menuScreen .panel,#menuScreen .menu{position:relative;z-index:1}
+@media(max-width:1050px){
+ #menuScreen::before,#menuScreen::after{width:145px;opacity:.22}
+}
+.panel{width:min(920px,94vw);margin:7px auto;padding:9px;border-radius:14px;font-weight:bold}
+.namebox{background:#fff;border:3px solid #3cb5e9;font-size:19px}
+#playerName{margin-left:8px;padding:8px 12px;border:3px solid #222;border-radius:10px;font-size:18px;font-weight:bold;width:230px;max-width:55%}
+.menu{width:min(760px,92vw);margin:18px auto;display:grid;gap:15px}
+.menuBtn{padding:20px 15px;border:5px solid #222;border-radius:20px;font-size:24px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #555}
+.m1{background:#57db6a}.m2{background:#62c9ff}.m3{background:#ffd86a;color:#222;cursor:pointer}
+.small{font-size:15px;display:block;margin-top:5px}
+.score{display:inline-block;width:auto;background:#fff1ae;border:4px solid #222;font-size:21px}
+.inst{background:#fff0b5;border:3px solid #efb629;font-size:22px}
+.msg{background:#dff5ff;border:3px solid #3cb5e9;font-size:18px}
+.campo{position:relative;width:min(920px,94vw);aspect-ratio:2/1;margin:8px auto;border:6px solid white;background:url("campo_aprobado.png") center/100% 100% no-repeat;overflow:hidden}
+.controls{margin:10px}.controls button{margin:5px;padding:11px 18px;border:4px solid #222;border-radius:14px;font-size:17px;font-weight:bold;cursor:pointer}
+.start{background:#25c33a}.repeat{background:#269cf1}.reset{background:#ef3434;color:#fff}.home{background:#ffd43b}
+.hot{position:absolute;z-index:15;cursor:pointer;background:transparent;border:0}
+#pDef{left:22%;top:7%;width:24%;height:40%}#pMed{left:28%;top:43%;width:26%;height:49%}#pDel{left:55%;top:10%;width:28%;height:55%}
+#pBall{position:absolute;left:18.2%;top:62%;z-index:30;font-size:38px;line-height:1;transition:left 1.15s ease,top 1.15s ease;filter:drop-shadow(2px 3px 2px #555)}
+#shoot{display:none;position:absolute;left:69%;top:47%;z-index:40;width:72px;height:64px;background:#ffe400;border:4px solid #222;border-radius:12px;font-weight:900;cursor:pointer}
+#goal{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;font-size:48px;font-weight:900;color:#ffe500;text-shadow:4px 4px #111;white-space:nowrap}
+.zone{display:none;position:absolute;z-index:25;border:4px solid #ffe400;background:rgba(255,228,0,.82);border-radius:50%;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 0 0 3px #222}
+#sCenter{left:47%;top:43%;width:58px;height:58px}#sSide{left:46%;top:1%;width:58px;height:58px}#sCorner{right:1%;top:1%;width:58px;height:58px}#sMeta{left:8%;top:45%;width:62px;height:62px}
+#sBall{display:none;position:absolute;z-index:35;font-size:38px;line-height:1;filter:drop-shadow(2px 3px 2px #555)}
+#answers{display:none;width:min(920px,94vw);margin:8px auto}.answer{padding:11px 28px;margin:5px;border:4px solid #222;border-radius:14px;font-size:20px;font-weight:900;cursor:pointer}.foot{background:#76d7ff}.hands{background:#ffcf69}
+#celebrate{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;font-size:46px;font-weight:900;color:#ffe500;text-shadow:4px 4px #111;white-space:nowrap}
+
+/* ACTIVIDAD 3 */
+
+@keyframes selectedPulse{
+  0%,100%{box-shadow:0 0 0 4px #222,0 0 8px 4px #9b5de5;transform:scale(1)}
+  50%{box-shadow:0 0 0 4px #222,0 0 22px 9px #9b5de5;transform:scale(1.025)}
+}
+.moveMenu button.selectedPos{
+  background:#9b5de5 !important;
+  color:#fff !important;
+  border-color:#111 !important;
+  animation:selectedPulse 1.15s ease-in-out infinite;
+}
+
+.moveMenu{width:min(850px,94vw);margin:10px auto;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.moveMenu button{padding:14px;border:4px solid #222;border-radius:16px;font-size:19px;font-weight:900;cursor:pointer}
+.posGk{background:#67c7ff}.posDef{background:#ff7979}.posMid{background:#ffd66b}.posFwd{background:#78df83}
+#moveField{background:none;background-color:#239b39}
+.fieldLine{position:absolute;background:#fff;opacity:.95;pointer-events:none}
+.midLine{left:49.7%;top:0;width:.6%;height:100%}
+.centerCircle{position:absolute;left:42%;top:34%;width:16%;height:32%;border:4px solid #fff;border-radius:50%;pointer-events:none}
+.goalBoxL{position:absolute;left:0;top:25%;width:17%;height:50%;border:4px solid #fff;border-left:0}
+.goalBoxR{position:absolute;right:0;top:25%;width:17%;height:50%;border:4px solid #fff;border-right:0}
+.goalL,.goalR{position:absolute;top:38%;width:4%;height:24%;border:4px solid #fff}.goalL{left:0}.goalR{right:0}
+#soloPlayer{display:none;position:absolute;z-index:25;width:86px;height:112px;transform:translate(-50%,-50%);transition:left 1.1s ease,top 1.1s ease}
+.head{position:absolute;left:27px;top:2px;width:34px;height:34px;background:#f1c49b;border:3px solid #222;border-radius:50%}
+.hair{position:absolute;left:24px;top:0;width:40px;height:18px;background:#6b351c;border-radius:50% 50% 25% 25%}
+.body{position:absolute;left:21px;top:34px;width:46px;height:45px;border:3px solid #222;border-radius:10px;font-weight:900;color:#fff;padding-top:9px}
+.arm{position:absolute;top:42px;width:12px;height:38px;background:#f1c49b;border:3px solid #222;border-radius:8px}.a1{left:11px;transform:rotate(18deg)}.a2{right:9px;transform:rotate(-18deg)}
+.leg{position:absolute;top:76px;width:14px;height:35px;background:#222;border-radius:7px}.l1{left:25px}.l2{right:23px}
+#moveZone{display:none;position:absolute;z-index:10;border:5px dashed #ffe400;background:rgba(255,228,0,.18);border-radius:20px;pointer-events:none}
+#movePrompt{display:none;width:min(920px,94vw);margin:8px auto}
+.dir{padding:11px 17px;margin:4px;border:4px solid #222;border-radius:13px;font-size:17px;font-weight:900;cursor:pointer;background:#fff}
+#ruleCard{display:none;position:absolute;left:50%;bottom:3%;transform:translateX(-50%);z-index:40;width:82%;padding:8px;background:rgba(255,255,255,.94);border:3px solid #222;border-radius:12px;font-weight:900;color:#14247d}
+
+.namebox{display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap}
+.identityField{display:inline-flex;align-items:center;gap:7px}
+#playerNumber{padding:8px 8px;border:3px solid #222;border-radius:10px;font-size:18px;font-weight:bold;width:82px;text-align:center}
+@media(max-width:600px){.namebox{gap:10px}.identityField{width:100%;justify-content:center}}
+
+#soloName{
+ position:absolute;left:50%;top:-29px;transform:translateX(-50%);
+ min-width:76px;padding:3px 8px;background:#fff;border:3px solid #222;
+ border-radius:10px;font-size:14px;font-weight:900;color:#14247d;
+ white-space:nowrap;text-align:center;
+}
+
+#soloPlayer{width:125px!important;height:150px!important}
+#playerSprite{position:absolute;left:50%;top:0;transform:translateX(-50%);max-width:125px;max-height:145px;object-fit:contain;filter:drop-shadow(2px 3px 2px rgba(0,0,0,.35))}
+#soloPlayer .head,#soloPlayer .hair,#soloPlayer .arm,#soloPlayer .leg,#soloPlayer .body{display:none!important}
+#jerseyNumber{display:none}
+#soloName{top:-31px!important;z-index:5}
+
+/* V10: personajes completos y ligeramente reducidos */
+#soloPlayer{width:112px!important;height:142px!important}
+#playerSprite{
+ max-width:108px!important;
+ max-height:132px!important;
+ object-fit:contain!important;
+}
+#soloName{top:-27px!important}
+
+/* V11 - personajes aislados completos */
+#soloPlayer{width:116px!important;height:146px!important}
+#playerSprite{max-width:112px!important;max-height:136px!important;object-fit:contain!important}
+
+/* V12: sprites sin halo/sombra */
+#playerSprite{filter:none!important;max-width:108px!important;max-height:132px!important}
+
+/* V13: personajes nuevos, completos y sin sombra CSS */
+#soloPlayer{width:110px!important;height:142px!important}
+#playerSprite{filter:none!important;max-width:106px!important;max-height:130px!important;object-fit:contain!important}
+
+/* V14 - personajes definitivos de Actividad 3 */
+#soloPlayer{width:118px!important;height:150px!important}
+#playerSprite{
+ filter:none!important;
+ max-width:114px!important;
+ max-height:138px!important;
+ object-fit:contain!important;
+}
+
+/* V15 - Sección 4: Aprende los 5 saques */
+#activity4{padding:12px;text-align:center}
+.a4intro{font-weight:800;font-size:18px}
+.kickTabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px auto}
+.kickTabs button,.kickActions button,.backBtn,#practiceChoices button{
+ border:3px solid #222;border-radius:14px;padding:10px 14px;font-weight:900;
+ background:#fff;cursor:pointer;font-size:16px
+}
+.kickTabs button:hover,.kickActions button:hover,#practiceChoices button:hover{transform:scale(1.04)}
+.kickLesson{max-width:900px;margin:auto;border:4px solid #222;border-radius:18px;padding:12px;background:#f7fbff}
+.miniField{position:relative;width:min(92vw,760px);height:330px;margin:10px auto;
+ background:#55a84f;border:5px solid white;overflow:visible;border-radius:10px}
+.halfLine{position:absolute;left:50%;top:0;height:100%;border-left:4px solid white}
+.centerCircle{position:absolute;left:50%;top:50%;width:115px;height:115px;border:4px solid white;
+ border-radius:50%;transform:translate(-50%,-50%)}
+.kickPlayer,.kickBall,.kickTarget{position:absolute;transition:all 1.2s ease;transform:translate(-50%,-50%)}
+.kickPlayer{font-size:62px;left:43%;top:50%}.kickBall{font-size:38px;left:50%;top:50%}
+.kickTarget{font-size:38px;left:68%;top:50%}
+.kickSteps{max-width:760px;margin:10px auto;text-align:left;background:#fff;border-radius:14px;padding:12px;
+ border:2px solid #333;font-size:17px;font-weight:700}
+.kickSteps div{margin:6px 0}
+.kickActions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.kickPractice{margin:12px auto;padding:12px;max-width:700px;border:3px dashed #333;border-radius:14px;background:#fff}
+#practiceChoices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#practiceResult{font-size:20px;font-weight:900}
+
+
+.menuBtn.m4{background:#c99cff}
+
+/* V17 - líneas completas y porterías en el campo de enseñanza */
+.penaltyBox,.goalBox{position:absolute;top:50%;transform:translateY(-50%);border:4px solid #fff;height:58%;box-sizing:border-box}
+.penaltyBox{width:17%}.goalBox{width:8%;height:30%}
+.penaltyLeft,.goalBoxLeft{left:-4px;border-left:0}
+.penaltyRight,.goalBoxRight{right:-4px;border-right:0}
+.centerSpot{position:absolute;left:50%;top:50%;width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%)}
+.goal{position:absolute;top:50%;width:4.8%;height:25%;transform:translateY(-50%);border:4px solid #fff;box-sizing:border-box;background:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 2px,transparent 2px 8px)}
+.goalLeft{left:0;border-left:0}.goalRight{right:0;border-right:0}
+
+/* V18 - S1 aprobado: solo balón + dos trayectorias cortas */
+.s1Arrows{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.s1PassLine{stroke:#ffe600;stroke-width:1.7;stroke-dasharray:3.2 2.2;stroke-linecap:round;vector-effect:non-scaling-stroke}
+#kickBall{z-index:5}
+
+/* V19 - resalta el saque que se está practicando */
+.kickTabs button.kickSelected{
+  background:#ffd84d !important;
+  color:#111 !important;
+  border-color:#111 !important;
+  box-shadow:0 0 0 4px #fff,0 0 0 7px #9b5de5,0 0 18px 8px rgba(155,93,229,.55);
+  transform:scale(1.06);
+  animation:kickSelectedPulse 1.25s ease-in-out infinite;
+}
+@keyframes kickSelectedPulse{
+  0%,100%{box-shadow:0 0 0 4px #fff,0 0 0 7px #9b5de5,0 0 10px 5px rgba(155,93,229,.38)}
+  50%{box-shadow:0 0 0 4px #fff,0 0 0 7px #9b5de5,0 0 22px 10px rgba(155,93,229,.68)}
+}
+
+/* V20 - patrón gráfico limpio para S1 y S2 */
+.kickPlayer,.kickTarget{display:none!important}
+.kickMethodIcon{
+ position:absolute;z-index:8;font-size:38px;line-height:1;
+ transform:translate(-50%,-50%);pointer-events:none;
+ filter:none!important;
+}
+.s2Direction{
+ position:absolute;z-index:7;height:0;border-top:6px dashed #ffe600;
+ transform-origin:0 50%;pointer-events:none;
+}
+.s2Direction:after{
+ content:"";position:absolute;right:-2px;top:-11px;width:0;height:0;
+ border-top:8px solid transparent;border-bottom:8px solid transparent;
+ border-left:15px solid #ffe600;
+}
+
+/* V21 - S2: recorrido rojo exterior para saque de banda */
+.s2ThrowZone{
+ position:absolute;z-index:9;height:0;
+ border-top:7px solid #e21b23;
+ pointer-events:none;
+ border-radius:8px;
+ box-shadow:0 0 2px rgba(0,0,0,.45);
+}
+/* se extiende solamente por la mitad izquierda: de la esquina a la línea central */
+#s2ZoneTop{left:1%;top:-9px;width:98%}
+#s2ZoneBottom{left:1%;bottom:-9px;width:98%}
+
+/* V22 - S2 exterior visible and ball starts at the hands */
+.miniField{margin-top:28px!important;margin-bottom:28px!important}
+#s2ZoneTop{left:1%!important;top:-13px!important;width:98%!important}
+#s2ZoneBottom{left:1%!important;bottom:-13px!important;width:98%!important}
+
+/* V23 - segundo ejemplo del saque desde el lateral inferior contrario */
+.s2ExampleBall,.s2ExampleHands{
+ position:absolute;z-index:10;line-height:1;transform:translate(-50%,-50%);
+ pointer-events:none;
+}
+.s2ExampleBall{font-size:38px}
+.s2ExampleHands{font-size:38px}
+
+.playerIdentity{
+ position:absolute;top:10px;right:12px;z-index:50;
+ background:#fff;border:3px solid #14247d;border-radius:12px;
+ padding:5px 10px;font-weight:900;color:#14247d;
+ box-shadow:0 2px 7px rgba(0,0,0,.18);font-size:14px;
+}
+.screen,.activity{position:relative}
+
+/* Líneas blancas exteriores más visibles para aprendizaje */
+.miniField,.field,.soccerField,#field,#moveField,.kickField{
+ outline:5px solid #fff !important;
+ outline-offset:-5px;
+ box-shadow:inset 0 0 0 2px rgba(0,0,0,.20);
+}
+
+/* V25: identidad del club y entrenador */
+.clubBrand{
+ position:absolute;left:10px;top:8px;z-index:55;
+ display:flex;align-items:center;gap:8px;
+ background:rgba(255,255,255,.94);border:2px solid #14247d;
+ border-radius:12px;padding:4px 8px;box-shadow:0 2px 6px rgba(0,0,0,.16);
+}
+.clubBrand img{width:48px;height:48px;object-fit:cover;border-radius:50%}
+.clubBrand .coach{font-size:13px;font-weight:900;color:#14247d;white-space:nowrap}
+
+/* Identificación del niño: lado izquierdo, cerca de la portería izquierda */
+.playerIdentity{
+ top:76px!important;left:12px!important;right:auto!important;
+}
+
+.kickTabs button{
+ font-weight:900!important;
+}
+.kickTabs button::first-line{
+ font-size:18px;
+}
+</style>
+<style>
+/* V25.1 - identificación al doble de tamaño */
+.clubBrand{
+  padding:8px 16px!important;
+  gap:14px!important;
+  border-width:3px!important;
+}
+.clubBrand img{
+  width:96px!important;
+  height:96px!important;
+}
+.clubBrand .coach{
+  font-size:26px!important;
+}
+.playerIdentity{
+  font-size:28px!important;
+  padding:8px 16px!important;
+  border-width:3px!important;
+  top:132px!important;
+  left:12px!important;
+  right:auto!important;
+}
+</style>
+
+<style>
+/* V25.2 - bloque lateral centrado en el espacio libre izquierdo */
+.clubBrand{
+ left:86px!important;
+ transform:translateX(-50%)!important;
+}
+.playerIdentity{
+ left:86px!important;
+ right:auto!important;
+ transform:translateX(-50%)!important;
+}
+</style>
+
+<style>
+/* V25.3 - identificación lateral proporcionada y completamente visible */
+.clubBrand{
+  left:12px!important;
+  transform:none!important;
+  padding:6px 10px!important;
+  gap:9px!important;
+  max-width:245px!important;
+}
+.clubBrand img{
+  width:65px!important;
+  height:65px!important;
+}
+.clubBrand .coach{
+  font-size:18px!important;
+}
+.playerIdentity{
+  left:12px!important;
+  right:auto!important;
+  top:94px!important;
+  transform:none!important;
+  font-size:20px!important;
+  padding:6px 10px!important;
+}
+</style>
+
+<style>
+/* V25.4 - ancho suficiente para Entrenador - Ramon */
+.clubBrand{
+  width:270px!important;
+  max-width:270px!important;
+  box-sizing:border-box!important;
+}
+.clubBrand .coach{
+  font-size:18px!important;
+  white-space:nowrap!important;
+}
+</style>
+
+<style>
+/* V25.5 - S3 saque de esquina */
+.s3CornerArc{
+ position:absolute;z-index:6;width:30px;height:30px;
+ border:4px solid #fff;pointer-events:none;
+}
+#s3ArcTop{right:-4px;top:-4px;border-left:0;border-bottom:0;border-radius:0 0 0 30px}
+#s3ArcBottom{right:-4px;bottom:-4px;border-left:0;border-top:0;border-radius:30px 0 0 0}
+.s3Arrow{
+ position:absolute;z-index:7;height:0;border-top:5px dashed #ffe600;
+ transform-origin:0 50%;pointer-events:none;
+}
+.s3Arrow:after{
+ content:"";position:absolute;right:-2px;top:-9px;
+ border-left:14px solid #ffe600;border-top:7px solid transparent;border-bottom:7px solid transparent;
+}
+</style>
+
+<style>
+/* V25.7 - Los 5 Saques: asociación visual S4=mano, S5=pie */
+#activity2 .ball{display:none!important}
+#activity2 .s4Spot{
+  left:13.2%!important;
+  top:45.5%!important;
+}
+#activity2 .s5Spot{
+  display:flex!important;
+  left:13.7%!important;
+  top:67.5%!important;
+}
+</style>
+
+<style>
+/* V25.8 - corrección real en LOS 5 SAQUES */
+#kicksScreen #sBall{display:none!important}
+
+/* S4: sobre la mano del portero */
+#kicksScreen #sMeta{
+ left:5.0%!important;
+ top:50.0%!important;
+ width:58px!important;
+ height:58px!important;
+}
+
+/* S5: sobre el pie del portero */
+#kicksScreen #sMetaFoot{
+ left:8.0%!important;
+ top:65.0%!important;
+ width:58px!important;
+ height:58px!important;
+}
+</style>
+
+
+<style>
+/* V25.10 - gráfica aprobada de LOS 5 SAQUES */
+#kicksScreen .campo{
+ background-image:url("campo_saques_sin_balon.jpg")!important;
+}
+#kicksScreen #sBall{display:none!important}
+
+/* Todos visibles desde que abre la sección */
+#kicksScreen #sCenter,
+#kicksScreen #sSide,
+#kicksScreen #sCorner,
+#kicksScreen #sMeta,
+#kicksScreen #sMetaFoot{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+}
+
+/* S4 = mano extendida del portero */
+#kicksScreen #sMeta{
+ left:14.8%!important;
+ top:48.0%!important;
+ width:58px!important;height:58px!important;
+}
+
+/* S5 = pie del portero, sin tapar la etiqueta PORTERO */
+#kicksScreen #sMetaFoot{
+ left:6.4%!important;
+ top:60.0%!important;
+ width:58px!important;height:58px!important;
+}
+</style>
+
+<style>
+/* V25.15 - dos posiciones válidas para S2 y dos para S3 */
+#kicksScreen #sSide{
+ left:45.0%!important;
+ top:2.0%!important;
+}
+#kicksScreen #sSideBottom{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ position:absolute!important;
+ left:55.0%!important;
+ top:91.0%!important;
+}
+#kicksScreen #sCornerBottom{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ position:absolute!important;
+ left:94.0%!important;
+ top:88.0%!important;
+}
+</style>
+
+<style>
+/* V25.16 - ajuste visual solicitado */
+#kicksScreen #sSide{
+ left:16%!important;
+ top:2.0%!important;
+}
+#kicksScreen #sSideBottom{
+ left:42%!important;
+ top:91.0%!important;
+ width:58px!important;
+ height:58px!important;
+ font-size:inherit!important;
+}
+#kicksScreen #sCornerBottom{
+ left:94.0%!important;
+ top:88.0%!important;
+ width:58px!important;
+ height:58px!important;
+ font-size:inherit!important;
+}
+</style>
+
+<style>
+/* V25.17 - S2 inferior corregido */
+#kicksScreen #sSideBottom{
+  left:36%!important;
+  top:84%!important;
+  width:58px!important;
+  height:58px!important;
+}
+</style>
+
+<style>
+/* V25.18 - S2 inferior una franja clara hacia la derecha */
+#kicksScreen #sSideBottom{
+  left:43%!important;
+  top:84%!important;
+  width:58px!important;
+  height:58px!important;
+}
+</style>
+
+<style>
+/* V25.19 - reubicación solicitada de los dos S2 */
+#kicksScreen #sSide{
+  left:23%!important;
+}
+#kicksScreen #sSideBottom{
+  left:57%!important;
+  top:84%!important;
+  width:58px!important;
+  height:58px!important;
+}
+</style>
+
+<style>
+/* V25.23 - zapatos S3 iguales en ambas esquinas */
+#s3TopShoe,#s3BottomShoe{
+  font-size:34px!important;
+  line-height:1!important;
+  z-index:12!important;
+}
+</style>
+
+<style>
+/* V25.24: registro limpio */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
+
+/* V25.24: S3 - solo un zapato junto a cada balón de la esquina derecha */
+#s3TopShoe,#s3BottomShoe{
+ display:none;
+ position:absolute;
+ font-size:34px!important;
+ line-height:1!important;
+ z-index:20!important;
+ transform:none!important;
+}
+/* Los zapatos dedicados aparecen únicamente al seleccionar S3 */
+body:has(.kickTabs button:nth-child(3).kickSelected) #s3TopShoe,
+body:has(.kickTabs button:nth-child(3).kickSelected) #s3BottomShoe{display:block!important;}
+</style>
+
+<style>
+/* V25.26 - S4 visible dentro de la cancha */
+.s4HandsCue{position:absolute;font-size:38px;line-height:1;z-index:20;pointer-events:none}
+.s4Direction{position:absolute;height:0;border-top:6px dashed #ffe000;transform-origin:0 50%;z-index:11;pointer-events:none}
+.s4Direction:after{content:"";position:absolute;right:-4px;top:-9px;border-left:16px solid #ffe000;border-top:8px solid transparent;border-bottom:8px solid transparent}
+</style>
+
+<style>
+/* V25.27 - S5 copia educativa de S4, usando el pie */
+.s5ShoeCue{position:absolute;font-size:38px;line-height:1;z-index:20;pointer-events:none}
+.s5Direction{position:absolute;height:0;border-top:6px dashed #ffe000;transform-origin:0 50%;z-index:11;pointer-events:none}
+.s5Direction:after{content:"";position:absolute;right:-4px;top:-9px;border-left:16px solid #ffe000;border-top:8px solid transparent;border-bottom:8px solid transparent}
+</style>
+
+<style>
+/* V25.28 - portero visual para S4/S5 */
+.keeperCue{
+ position:absolute!important;width:78px;height:92px;z-index:20!important;
+ pointer-events:none;font-size:28px!important;line-height:1!important;
+}
+.keeperCue .keeperHead{position:absolute;left:22px;top:0;font-size:27px}
+.keeperCue .keeperBody{position:absolute;left:20px;top:28px;font-size:31px}
+.keeperCue .keeperAction{position:absolute;font-size:32px}
+.keeperHands .keeperAction{left:45px;top:28px}
+.keeperFoot .keeperAction{left:43px;top:50px;transform:rotate(-20deg)}
+</style>
+
+<style>
+/* V25.29 */
+#playerCard, #playerInfo, .playerCard, .playerInfo, .childBadge, #childBadge {
+  text-transform: uppercase !important;
+}
+</style>
+
+<style>
+/* S5 aprobado: portero a la izquierda del balón, ejecutando con el pie */
+.s5KeeperKick, .keeperFoot{
+  position:absolute !important;
+  width:86px !important; height:105px !important;
+  z-index:20 !important; pointer-events:none !important;
+  font-size:30px !important; line-height:1 !important;
+}
+.s5KeeperKick .s5Head{position:absolute;left:15px;top:2px;font-size:27px}
+.s5KeeperKick .s5Body{position:absolute;left:14px;top:31px;font-size:33px}
+.s5KeeperKick .s5Leg{position:absolute;left:44px;top:58px;font-size:34px;transform:rotate(-18deg)}
+</style>
+
+<style>
+/* V25.30: campos de registro totalmente seleccionables */
+input, #playerName, #playerNumber, #childName, #childNumber {
+  pointer-events:auto !important;
+  position:relative;
+  z-index:100 !important;
+}
+</style>
+
+<style>
+/* V25.31 - S4 y S5: solamente balón */
+#s4HandsCue, #s5ShoeCue,
+.s4HandsCue, .s5ShoeCue,
+.keeperCue, .keeperHands, .keeperFoot,
+.s5KeeperKick {
+  display:none !important;
+  visibility:hidden !important;
+}
+</style>
+
+<style>
+/* V25.32 - indicadores visuales S4/S5 */
+#s4HandsCue, .s4HandsCue{
+ display:none;
+ visibility:hidden;
+ position:absolute !important;
+ z-index:25 !important;
+ font-size:38px !important;
+ line-height:1 !important;
+ pointer-events:none !important;
+}
+#s5ShoeCue, .s5ShoeCue{
+ display:none;
+ visibility:hidden;
+ position:absolute !important;
+ z-index:25 !important;
+ font-size:38px !important;
+ line-height:1 !important;
+ pointer-events:none !important;
+}
+.keeperCue, .keeperHands, .keeperFoot, .s5KeeperKick{
+ display:none !important;
+ visibility:hidden !important;
+}
+</style>
+
+<style>
+/* V25.33: cada indicador aparece solamente en su saque */
+#s4HandsCue, .s4HandsCue,
+#s5ShoeCue, .s5ShoeCue{
+  display:none !important;
+  visibility:hidden !important;
+}
+body.kick-s4 #s4HandsCue, body.kick-s4 .s4HandsCue{
+  display:block !important;
+  visibility:visible !important;
+}
+body.kick-s5 #s5ShoeCue, body.kick-s5 .s5ShoeCue{
+  display:block !important;
+  visibility:visible !important;
+}
+</style>
+
+<style>
+/* V25.34: texto completo en la casilla de nombre */
+input[placeholder*="NOMBRE" i]{
+ width:220px !important;
+ min-width:220px !important;
+ box-sizing:border-box !important;
+}
+</style>
+
+<style>
+/* V25.35 - nueva cancha definida para S1, S2, S3, S4 y S5 */
+#kickField, .kickField, #lessonField, .lessonField,
+.kickLesson .miniField, #activity4 .miniField,
+#activity4 .lessonPitch, #activity4 .practiceField {
+  background-image:url("campo_lecciones_limpio.png") !important;
+  background-size:100% 100% !important;
+  background-position:center !important;
+  background-repeat:no-repeat !important;
+}
+</style>
+
+<style>
+/* V25.36 - Actividad 4 usa una sola gráfica de cancha */
+#activity4 .miniField > .halfLine,
+#activity4 .miniField > .centerCircle,
+#activity4 .miniField > .goal,
+#activity4 .miniField > .penaltyBox,
+#activity4 .miniField > .goalBox,
+#activity4 .miniField > .centerSpot{
+  display:none !important;
+}
+
+/* S4: manos claramente visibles a la izquierda del balón */
+body.kick-s4 #s4HandsCue{
+  display:block !important;
+  visibility:visible !important;
+  left:5% !important;
+  top:45% !important;
+  z-index:30 !important;
+  font-size:38px !important;
+}
+</style>
+
+<style>
+/* V25.37 - cancha nueva ocupa todo el área gris de las lecciones S1-S5 */
+#activity4 .miniField{
+  background-image:url("campo_lecciones_limpio.png") !important;
+  background-size:100% 100% !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
+
+/* La gráfica nueva es la única cancha visible */
+#activity4 .miniField > .halfLine,
+#activity4 .miniField > .centerCircle,
+#activity4 .miniField > .goal,
+#activity4 .miniField > .penaltyBox,
+#activity4 .miniField > .goalBox,
+#activity4 .miniField > .centerSpot{
+  display:none !important;
+}
+</style>
+
+<style>
+/* V25.38 - cancha limpia sin margen gris para S1-S5 */
+#activity4 .miniField{
+ background-image:url("campo_lecciones_limpio.png") !important;
+ background-size:100% 100% !important;
+ background-position:center center !important;
+ background-repeat:no-repeat !important;
+ border:0 !important;
+}
+</style>
+
+<style>
+/* V25.39 - S4: manos visibles exclusivamente a la izquierda del balón */
+body.kick-s4 #s4HandsCue{
+ display:block !important;
+ visibility:visible !important;
+ left:6% !important;
+ top:44% !important;
+ font-size:42px !important;
+ z-index:40 !important;
+}
+body:not(.kick-s4) #s4HandsCue{display:none !important;visibility:hidden !important;}
+</style>
+
+<style id="v2553-mobile-fixes">
+/* V25.53 - compatibilidad táctil iPhone / Android */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#c9efff}
+body{min-height:100dvh;min-height:-webkit-fill-available;overflow-x:hidden}
+button,input{-webkit-appearance:none;appearance:none;font:inherit}
+button,.menuBtn,.controls button,.answer,.dir,.finalOption,.kickTabs button,.kickActions button,#practiceChoices button,.hot,.zone{
+  touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.12);
+}
+button{user-select:none;-webkit-user-select:none}
+input{user-select:text;-webkit-user-select:text}
+@media (hover:none) and (pointer:coarse){
+  .menuBtn:hover,.finalOption:hover,.kickTabs button:hover,.kickActions button:hover,#practiceChoices button:hover{transform:none}
+  .menuBtn{min-height:92px}
+  .controls button,.answer,.dir,.finalOption,.kickTabs button,.kickActions button,#practiceChoices button{min-height:48px}
+}
+@media(max-width:600px){
+  h1{font-size:clamp(25px,7vw,34px);-webkit-text-stroke:1.5px #111;margin:10px 4px}
+  .panel{width:96vw}
+  .menu{width:96vw;margin:12px auto;gap:12px}
+  .menuBtn{font-size:clamp(20px,5.4vw,24px);padding:16px 10px}
+  .small{font-size:clamp(14px,4vw,17px);line-height:1.25}
+  .campo,#finalField{width:98vw}
+  .controls{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+  .controls button{margin:2px;padding:10px 12px}
+}
+</style>
+<style>
+/* V25.58 - cambio solicitado: ocultar portero contrario y dejar solo S1 en las casillas de saques */
+#finalOpponentKeeper,#finalOpponentLabel,#finalKeeperEight{display:none!important;}
+</style>
+
+<style id="v2571-old-welcome-guard">
+#v2570Welcome,#welcomeOverlay,#welcomeModal,#welcomeScreen,
+.welcome-overlay.v2570,.welcome-modal.v2570{display:none!important}
+</style>
+<script id="v2571-old-welcome-cleanup">
+(function(){
+ function cleanOldWelcome(){
+   document.querySelectorAll('#v2570Welcome,#welcomeOverlay,#welcomeModal,#welcomeScreen,.welcome-overlay.v2570,.welcome-modal.v2570').forEach(function(e){e.remove();});
+   document.querySelectorAll('button').forEach(function(b){
+     if(/ESCUCHAR Y COMENZAR/i.test(b.textContent||'')){
+       var box=b.closest('[id*="welcome" i],[class*="welcome" i]');
+       if(box) box.remove();
+     }
+   });
+ }
+ document.addEventListener('DOMContentLoaded',cleanOldWelcome);
+ window.addEventListener('load',cleanOldWelcome);
+ setTimeout(cleanOldWelcome,100);
+ setTimeout(cleanOldWelcome,600);
+})();
+</script>
+
+</head>
+<body>
+
+<h1>⚽ <span class="dynamicClubName">TU CLUB</span> ⚽</h1>
+
+<section id="menuScreen" class="screen active">
+ <div class="panel namebox">
+   <span class="identityField">👦 Nombre:
+     <input id="playerName" type="text" maxlength="20" placeholder="Escribe tu nombre" autocomplete="off" autocapitalize="words" spellcheck="false">
+   </span>
+   <span class="identityField">👕 Número:
+     <input id="playerNumber" type="text" maxlength="2" inputmode="numeric" pattern="[0-9]*" placeholder="#" autocomplete="off">
+   </span>
+ </div>
+ <div class="panel msg">Escoge una actividad para comenzar.</div>
+ <div class="menu">
+   <button class="menuBtn m1" onclick="openGame('passes')">⚽ 1. POSICIONES Y PASES<span class="small">Portero → Defensa → Mediocampista → Delantero → Gol</span></button>
+   <button class="menuBtn m2" onclick="openGame('kicks')">🥅 2. LOS 5 SAQUES<span class="small">Lugar del saque + Pie o Manos</span></button>
+   <button class="menuBtn m3" onclick="openGame('moves')">🏃 3. MOVIMIENTO DE LAS POSICIONES<span class="small">Demostración + práctica por posición</span></button>
+   <button class="menuBtn m4" onclick="openActivity4()">⚽ 4. APRENDE LOS 5 SAQUES<span class="small">Demostración detallada + práctica de S1 a S5</span></button>
+   <button class="menuBtn m5" onclick="openFinalGame()">🏆 5. PARTIDO FINAL<span class="small">Pon en práctica todo lo aprendido</span></button>
+ </div>
+</section>
+
+<section id="passesScreen" class="screen">
+ <div class="panel score">⭐ ESTRELLAS: <span id="pStars">0</span></div>
+ <div id="pInst" class="panel inst">Presiona COMENZAR</div>
+ <div id="pMsg" class="panel msg">Aprenderemos las posiciones jugando.</div>
+ <div class="campo">
+   <button class="hot" id="pDef" onclick="pickPass('DEFENSA')"></button>
+   <button class="hot" id="pMed" onclick="pickPass('MEDIOCAMPISTA')"></button>
+   <button class="hot" id="pDel" onclick="pickPass('DELANTERO')"></button>
+   <div id="pBall">⚽</div><button id="shoot" onclick="scoreGoal()">👟 ⚽</button><div id="goal">¡GOOOOOOOL!</div>
+ </div>
+ <div class="controls"><button class="start" onclick="startPasses()">▶ COMENZAR</button><button class="repeat" onclick="repeatPass()">🔊 REPETIR</button><button class="reset" onclick="resetPasses()">↻ REINICIAR</button><button class="home" onclick="goHome()">🏠 MENÚ</button></div>
+</section>
+
+<section id="kicksScreen" class="screen">
+ <div class="panel score">⭐ ESTRELLAS: <span id="sStars">0</span> &nbsp; | &nbsp; SAQUE: <span id="round">—</span>/5</div>
+ <div id="sInst" class="panel inst">Presiona COMENZAR</div>
+ <div id="sMsg" class="panel msg">Practicaremos dónde se hace cada saque y si se hace con el pie o con las manos.</div>
+ <div class="campo">
+   <button class="zone" id="sCenter" onclick="choosePlace('CENTRO')">S1</button>
+   <button class="zone" id="sSide" onclick="choosePlace('LATERAL')">S2</button>
+<button class="zone" id="sSideBottom" onclick="choosePlace('LATERAL')">S2</button>
+   <button class="zone" id="sCorner" onclick="choosePlace('ESQUINA')">S3</button>
+<button class="zone" id="sCornerBottom" onclick="choosePlace('ESQUINA')">S3</button>
+   <button class="s4Spot zone" id="sMeta" onclick="choosePlace('META4')">S4</button>
+<button class="s5Spot zone" id="sMetaFoot" onclick="choosePlace('META5')">S5</button>
+   <div id="sBall">⚽</div><div id="celebrate">⭐ ¡MUY BIEN! ⭐</div>
+ </div>
+ <div id="answers"><button class="answer foot" onclick="chooseMethod('PIE')">🦶 CON EL PIE</button><button class="answer hands" onclick="chooseMethod('MANOS')">🙌 CON LAS MANOS</button></div>
+ <div class="controls"><button class="start" onclick="startKicks()">▶ COMENZAR</button><button class="repeat" onclick="repeatKick()">🔊 REPETIR</button><button class="reset" onclick="resetKicks()">↻ REINICIAR</button><button class="home" onclick="goHome()">🏠 MENÚ</button></div>
+</section>
+
+
+<section id="movesScreen" class="screen">
+ <div class="panel score">⭐ ESTRELLAS: <span id="mStars">0</span></div>
+ <div id="mInst" class="panel inst">Escoge una posición</div>
+ <div id="mMsg" class="panel msg">Veremos primero la demostración y después tú practicarás.</div>
+ <div class="moveMenu">
+  <button class="posGk" data-pos="PORTERO" onclick="selectPosition('PORTERO')">🧤 PORTERO</button>
+  <button class="posDef" data-pos="DEFENSA" onclick="selectPosition('DEFENSA')">🛡️ DEFENSA</button>
+  <button class="posMid" data-pos="MEDIOCAMPISTA" onclick="selectPosition('MEDIOCAMPISTA')">🏃 MEDIOCAMPISTA</button>
+  <button class="posFwd" data-pos="DELANTERO" onclick="selectPosition('DELANTERO')">⚽ DELANTERO</button>
+ </div>
+ <div id="moveField" class="campo">
+  <div class="fieldLine midLine"></div><div class="centerCircle"></div>
+  <div class="goalBoxL"></div><div class="goalBoxR"></div><div class="goalL"></div><div class="goalR"></div>
+  <div id="moveZone"></div>
+  <div id="soloPlayer"><div id="soloName"></div><img id="playerSprite" alt="Jugador"><div id="jerseyNumber"></div></div>
+  <div id="ruleCard"></div>
+ </div>
+ <div id="movePrompt">
+   <button class="dir" onclick="practiceMove('IZQUIERDA')">⬆ IZQUIERDA</button>
+   <button class="dir" onclick="practiceMove('DERECHA')">⬇ DERECHA</button>
+   <button class="dir" onclick="practiceMove('ADELANTE')">➡ ADELANTE</button>
+   <button class="dir" onclick="practiceMove('ATRAS')">⬅ ATRÁS</button>
+ </div>
+ <div class="controls">
+   <button class="start" onclick="demoAgain()">▶ DEMOSTRACIÓN</button>
+   <button class="repeat" onclick="repeatMove()">🔊 REPETIR</button>
+   <button class="reset" onclick="resetMoves()">↻ REINICIAR</button>
+   <button class="home" onclick="goHome()">🏠 MENÚ</button>
+ </div>
+</section>
+<script>
+const $=x=>document.getElementById(x);
+function name(){return $("playerName").value.trim()}
+function playerNumber(){return $("playerNumber").value.trim()}
+function speak(t,d,rate=.82){
+ speechSynthesis.cancel();
+ let u=new SpeechSynthesisUtterance(t);
+ u.voice=bairoaVoice || selectBairoaVoice();
+ u.lang=(u.voice&&u.voice.lang)||"es-US";
+ u.rate=.78; u.pitch=1.0; u.volume=1;
+ let done=false,f=()=>{if(done)return;done=true;if(d)d()};
+ u.onend=f;u.onerror=f;
+ speechSynthesis.speak(u);
+}
+function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active")}
+function openGame(g){speechSynthesis.cancel();
+ if(g==="passes"){resetPasses();showScreen("passesScreen")}
+ else if(g==="kicks"){resetKicks();showScreen("kicksScreen")}
+ else{resetMoves();showScreen("movesScreen")}
+}
+function goHome(){speechSynthesis.cancel();resetPasses();resetKicks();resetMoves();showScreen("menuScreen")}
+
+/* JUEGO 1 */
+let ps=0,pstep=0,pplaying=false,pwaiting=false,plocked=false,plast="";
+const pseq=[["DEFENSA","Portero. Pasa la pelota al defensa."],["MEDIOCAMPISTA","Defensa. Pasa la pelota al mediocampista."],["DELANTERO","Mediocampista. Pasa la pelota al delantero."]];
+function pspeak(t,d,rate){plast=t;speak(t,d,rate)}
+function startPasses(){speechSynthesis.cancel();pstep=0;pplaying=true;pwaiting=false;plocked=false;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pMsg").textContent="⚽ ¡Comienza la jugada!";setTimeout(showPass,350)}
+function showPass(){if(pstep>=3)return readyShot();$("pInst").textContent="⚽ "+pseq[pstep][1];$("pMsg").textContent="Toca al jugador correcto.";pspeak(pseq[pstep][1])}
+function pickPass(n){
+  document.body.classList.remove("kick-s4","kick-s5");
+  if(n===4) document.body.classList.add("kick-s4");
+  if(n===5) document.body.classList.add("kick-s5");
+if(!pplaying||pwaiting||plocked)return;if(n!==pseq[pstep][0]){plocked=true;$("pMsg").textContent="🙂 Inténtalo otra vez.";return pspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>plocked=false)}plocked=true;ps++;$("pStars").textContent=ps;$("pMsg").textContent="⭐ ¡MUY BIEN! ¡EXCELENTE PASE!";let q={DEFENSA:["34%","38%"],MEDIOCAMPISTA:["39%","76%"],DELANTERO:["65%","46%"]}[n];$("pBall").style.left=q[0];$("pBall").style.top=q[1];setTimeout(()=>pspeak("¡Muy bien! Excelente pase.",()=>setTimeout(()=>{pstep++;plocked=false;pstep<3?showPass():readyShot()},650)),1150)}
+function readyShot(){pplaying=false;pwaiting=true;plocked=false;$("pInst").textContent="🎯 DELANTERO: ¡TIRA A LA PORTERÍA!";$("pMsg").textContent="👟⚽ Toca el botón amarillo con el zapato y el balón";$("shoot").style.display="block";pspeak("Delantero. Ahora tira a la portería.")}
+function scoreGoal(){if(!pwaiting||plocked)return;plocked=true;pwaiting=false;$("shoot").style.display="none";$("pBall").style.left="94%";$("pBall").style.top="49%";setTimeout(()=>{ps+=3;$("pStars").textContent=ps;let nm=name();$("pInst").textContent="⚽⚽⚽ ¡GOOOOOOOL! ⚽⚽⚽";$("pMsg").textContent="🏆 ¡EXCELENTE JUGADA! +3 ESTRELLAS 🏆";$("goal").textContent=nm?"¡GOOOOOOOL DE "+nm.toUpperCase()+"!":"¡GOOOOOOOL!";$("goal").style.display="block";pspeak(nm?"¡Góóóóóóóóóóóól de "+nm+"!":"¡Góóóóóóóóóóóól!",null,.32)},1150)}
+function repeatPass(){if(plast)pspeak(plast);else pspeak("Presiona comenzar.")}
+function pHome(){$("pBall").style.left="18.2%";$("pBall").style.top="62%"}
+function resetPasses(){speechSynthesis.cancel();ps=0;pstep=0;pplaying=false;pwaiting=false;plocked=false;plast="";$("pStars").textContent=0;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pInst").textContent="Presiona COMENZAR";$("pMsg").textContent="Aprenderemos las posiciones jugando."}
+
+/* JUEGO 2 */
+const kicks=[
+ {n:1,place:"CENTRO",method:"PIE",placeText:"en el centro de la cancha, dentro del círculo central",methodText:"con el pie",ball:["49%","47%"]},
+ {n:2,place:"LATERAL",method:"MANOS",placeText:"fuera de la línea blanca lateral",methodText:"con las manos",ball:["48%","3%"]},
+ {n:3,place:"ESQUINA",method:"PIE",placeText:"en la esquina de la cancha del equipo contrario",methodText:"con el pie",ball:["94%","4%"]},
+ {n:4,place:"META4",method:"MANOS",placeText:"desde el área frente a la portería",methodText:"con las manos",ball:["12%","50%"]},
+ {n:5,place:"META5",method:"PIE",placeText:"desde el área frente a la portería",methodText:"con el pie",ball:["12%","50%"]}
+];
+let si=0,ss=0,sphase="idle",slocked=false,slast="";
+function sspeak(t,d){slast=t;speak(t,d)}
+function zones(v){["sCenter","sSide","sSideBottom","sCorner","sCornerBottom","sMeta","sMetaFoot"].forEach(id=>$(id).style.display=v?"block":"none")}
+function startKicks(){speechSynthesis.cancel();si=0;ss=0;slocked=false;$("sStars").textContent=0;$("celebrate").style.display="none";nextKick()}
+function nextKick(){if(si>=5)return finishKicks();let k=kicks[si];sphase="place";slocked=false;$("round").textContent=k.n;$("answers").style.display="none";$("sBall").style.display="none";zones(true);$("sInst").textContent="SAQUE "+k.n+": ¿DÓNDE SE HACE?";$("sMsg").textContent="Toca el lugar correcto en la cancha.";sspeak("Saque número "+k.n+". Toca en la cancha el lugar donde se hace.")}
+function choosePlace(p){if(sphase!=="place"||slocked)return;let k=kicks[si];if(p!==k.place){slocked=true;$("sMsg").textContent="🙂 Esa no es la respuesta correcta. Inténtalo otra vez.";return sspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>slocked=false)}slocked=true;ss++;$("sStars").textContent=ss;zones(false);$("sBall").style.left=k.ball[0];$("sBall").style.top=k.ball[1];$("sBall").style.display="block";$("sMsg").textContent="⭐ ¡Correcto! Se hace "+k.placeText+".";sspeak("¡Muy bien! ¡Correcto! Se hace "+k.placeText+".",()=>{sphase="method";slocked=false;$("answers").style.display="block";$("sInst").textContent="SAQUE "+k.n+": ¿CÓMO SE HACE?";$("sMsg").textContent="Escoge PIE o MANOS.";sspeak("Ahora dime. ¿Se hace con el pie o con las manos?")})}
+function chooseMethod(m){if(sphase!=="method"||slocked)return;let k=kicks[si];if(m!==k.method){slocked=true;$("sMsg").textContent="🙂 Esa no es la respuesta correcta. Inténtalo otra vez.";return sspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>slocked=false)}slocked=true;ss++;$("sStars").textContent=ss;$("answers").style.display="none";$("celebrate").style.display="block";$("sInst").textContent="⭐ ¡SAQUE "+k.n+" CORRECTO!";$("sMsg").textContent="Se realiza "+k.methodText+".";let nm=name();sspeak("¡Excelente"+(nm?", "+nm:"")+"! Saque número "+k.n+", "+k.methodText+".",()=>setTimeout(()=>{$("celebrate").style.display="none";si++;nextKick()},700))}
+function finishKicks(){sphase="done";zones(false);$("answers").style.display="none";$("sBall").style.display="none";$("round").textContent="5";let nm=name();$("sInst").textContent="🏆 ¡COMPLETASTE LOS 5 SAQUES!";$("sMsg").textContent="⭐ ¡Excelente práctica! Total: "+ss+" estrellas.";$("celebrate").textContent="🏆 ¡5 SAQUES! 🏆";$("celebrate").style.display="block";sspeak("¡Excelente"+(nm?", "+nm:"")+"! Completaste los cinco saques.")}
+function repeatKick(){if(slast)sspeak(slast);else sspeak("Presiona comenzar.")}
+function resetKicks(){speechSynthesis.cancel();si=0;ss=0;sphase="idle";slocked=false;slast="";$("sStars").textContent=0;$("round").textContent="—";zones(false);$("answers").style.display="none";$("sBall").style.display="none";$("celebrate").style.display="none";$("celebrate").textContent="⭐ ¡MUY BIEN! ⭐";$("sInst").textContent="Presiona COMENZAR";$("sMsg").textContent="Practicaremos dónde se hace cada saque y si se hace con el pie o con las manos."}
+
+/* ACTIVIDAD 3: MOVIMIENTO DE LAS POSICIONES */
+const moveData={
+ PORTERO:{num:"1",color:"#268de0",zone:["2%","30%","17%","40%"],start:["11%","50%"],
+  demo:[["7%","40%"],["7%","60%"],["15%","50%"],["9%","50%"]],
+  desc:"El portero se queda cerquita de su portería y se mueve de izquierda a derecha para tapar el balón con sus manos.",
+  rule:"Regla de oro: no debe salir corriendo lejos de su área. Si tiene el balón, se lo pasa rápido con las manos o el pie a su defensa.",
+  allowed:["IZQUIERDA","DERECHA","ADELANTE","ATRAS"]},
+ DEFENSA:{num:"4",color:"#e23b3b",zone:["16%","12%","32%","76%"],start:["31%","50%"],
+  demo:[["25%","30%"],["25%","70%"],["44%","50%"],["30%","50%"]],
+  desc:"El defensa juega en la mitad de la cancha más cerca de su portero. Se mueve hacia los lados para detener a los rivales.",
+  rule:"Regla de oro: cuando su equipo ataca sube un poquito para ayudar, pero nunca debe pasar de la mitad de la cancha. Si quita el balón, se lo pasa al mediocampista.",
+  allowed:["IZQUIERDA","DERECHA","ADELANTE","ATRAS"]},
+ MEDIOCAMPISTA:{num:"8",color:"#e23b3b",zone:["34%","12%","32%","76%"],start:["50%","50%"],
+  demo:[["43%","30%"],["57%","70%"],["60%","35%"],["42%","65%"],["50%","50%"]],
+  desc:"Los mediocampistas son los que más corren. Se mueven por todo el centro de la cancha, hacia adelante y hacia atrás.",
+  rule:"Regla de oro: ayudan al defensa a quitar el balón y luego corren a pasárselo al delantero. ¡Son el motor del equipo!",
+  allowed:["IZQUIERDA","DERECHA","ADELANTE","ATRAS"]},
+ DELANTERO:{num:"9",color:"#e23b3b",zone:["52%","12%","43%","76%"],start:["72%","50%"],
+  demo:[["70%","28%"],["70%","72%"],["82%","45%"],["68%","55%"]],
+  desc:"El delantero juega en la mitad de la cancha del equipo contrario. Se mueve de un lado a otro buscando estar libre para recibir el balón.",
+  rule:"Regla de oro: su misión principal es tirar a la portería y meter gol. Cuando el otro equipo tiene el balón, se queda arriba esperando que sus compañeros recuperen la pelota.",
+  allowed:["IZQUIERDA","DERECHA","ADELANTE","ATRAS"]}
+};
+let currentPos="",mStars=0,mLast="",demoTimer=null,mLocked=false;
+function mSpeak(t,d){mLast=t;speak(t,d,.68)}
+function setPlayer(pos){
+ let d=moveData[pos],p=$("soloPlayer"),z=$("moveZone");
+ $("soloName").textContent=name()||"JUGADOR";
+ let sprite={PORTERO:"portero.png",DEFENSA:"defensa.png",MEDIOCAMPISTA:"mediocampista.png",DELANTERO:"delantero.png"}[pos];
+ $("playerSprite").src=sprite;
+ p.style.left=d.start[0];p.style.top=d.start[1];p.style.display="block";
+ z.style.left=d.zone[0];z.style.top=d.zone[1];z.style.width=d.zone[2];z.style.height=d.zone[3];z.style.display="block";
+}
+function selectPosition(pos){
+ clearTimeout(demoTimer);
+ currentPos=pos;
+ document.querySelectorAll(".moveMenu button").forEach(b=>b.classList.toggle("selectedPos",b.dataset.pos===pos));
+ mLocked=true;
+ $("movePrompt").style.display="none";
+ $("ruleCard").style.display="none";
+ setPlayer(pos);
+ runDemo()
+}
+function runDemo(){
+ if(!currentPos)return;let d=moveData[currentPos],p=$("soloPlayer"),idx=0;
+ $("mInst").textContent="▶ DEMOSTRACIÓN: "+currentPos;$("mMsg").textContent=d.desc;
+ mSpeak(d.desc,()=>{
+   function step(){if(idx<d.demo.length){p.style.left=d.demo[idx][0];p.style.top=d.demo[idx][1];idx++;demoTimer=setTimeout(step,1150)}
+   else{demoTimer=setTimeout(()=>showRule(),500)}}
+   step();
+ });
+}
+function showRule(){let d=moveData[currentPos];$("ruleCard").textContent=d.rule;$("ruleCard").style.display="block";$("mMsg").textContent=d.rule;mSpeak(d.rule,()=>{mLocked=false;$("movePrompt").style.display="block";$("mInst").textContent="🎮 PRACTICA: ¿HACIA DÓNDE PUEDE MOVERSE?";$("mMsg").textContent="Escoge un movimiento permitido para "+currentPos.toLowerCase()+"."})}
+function practiceMove(dir){
+ if(!currentPos||mLocked)return;let d=moveData[currentPos],p=$("soloPlayer");
+ if(!d.allowed.includes(dir)){mLocked=true;$("mMsg").textContent="🙂 Ese movimiento no corresponde a esta práctica.";return mSpeak("Recuerda la zona de "+currentPos.toLowerCase()+". Inténtalo otra vez.",()=>mLocked=false)}
+ mLocked=true;mStars++;$("mStars").textContent=mStars;
+ let x=parseFloat(p.style.left),y=parseFloat(p.style.top);
+ if(dir==="IZQUIERDA")y-=10;
+ if(dir==="DERECHA")y+=10;
+ if(dir==="ADELANTE")x+=7;
+ if(dir==="ATRAS")x-=7;
+ // Clamp by pedagogical zone
+ if(currentPos==="PORTERO")x=Math.max(5,Math.min(16,x));
+ if(currentPos==="DEFENSA")x=Math.max(20,Math.min(46,x));
+ if(currentPos==="MEDIOCAMPISTA")x=Math.max(37,Math.min(63,x));
+ if(currentPos==="DELANTERO")x=Math.max(55,Math.min(90,x));
+ if(currentPos==="PORTERO")y=Math.max(35,Math.min(65,y));
+ else y=Math.max(22,Math.min(78,y));
+ p.style.left=x+"%";p.style.top=y+"%";
+ $("mMsg").textContent="⭐ ¡Muy bien! Movimiento correcto.";
+ let nm=name();mSpeak("¡Muy bien"+(nm?", "+nm:"")+"! Movimiento correcto.",()=>mLocked=false);
+}
+function demoAgain(){if(!currentPos)return mSpeak("Primero escoge una posición.");clearTimeout(demoTimer);mLocked=true;$("movePrompt").style.display="none";$("ruleCard").style.display="none";setPlayer(currentPos);runDemo()}
+function repeatMove(){if(mLast)mSpeak(mLast);else mSpeak("Escoge una posición para comenzar.")}
+function resetMoves(){clearTimeout(demoTimer);speechSynthesis.cancel();document.querySelectorAll(".moveMenu button").forEach(b=>b.classList.remove("selectedPos"));currentPos="";mStars=0;mLast="";mLocked=false;$("mStars").textContent=0;$("soloPlayer").style.display="none";$("moveZone").style.display="none";$("movePrompt").style.display="none";$("ruleCard").style.display="none";$("mInst").textContent="Escoge una posición";$("mMsg").textContent="Veremos primero la demostración y después tú practicarás."}
+
+let bairoaVoice=null;
+function selectBairoaVoice(){
+  const vs=window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  if(!vs.length) return null;
+  const spanish=vs.filter(v=>/^es([-_]|$)/i.test(v.lang||""));
+  const femaleNames=[
+    "Sabina","Helena","Elvira","Dalia","Paulina","Mónica","Monica",
+    "Sofía","Sofia","Soledad","Luciana","Paloma","Conchita","Laura",
+    "Google español de Estados Unidos","Google español"
+  ];
+  for(const n of femaleNames){
+    const v=spanish.find(x=>(x.name||"").toLowerCase().includes(n.toLowerCase()));
+    if(v){ bairoaVoice=v; return v; }
+  }
+  const female=spanish.find(v=>/(female|mujer|woman|sabina|helena|elvira|dalia|paulina|m[oó]nica|sof[ií]a|soledad|luciana|paloma|conchita|laura)/i.test(v.name||""));
+  bairoaVoice=female || spanish[0] || vs[0];
+  return bairoaVoice;
+}
+if(window.speechSynthesis){
+  selectBairoaVoice();
+  speechSynthesis.onvoiceschanged=selectBairoaVoice;
+}
+
+
+function getBairoaChildData(){
+  const nameEl=document.querySelector('#playerName,#childName,#nombre,#nameInput,input[name="name"],input[name="nombre"]');
+  const numEl=document.querySelector('#playerNumber,#childNumber,#numero,#numberInput,input[name="number"],input[name="numero"]');
+  const name=(nameEl&&nameEl.value)||(sessionStorage.getItem("bairoaPlayerName"))||"";
+  const number=(numEl&&numEl.value)||(sessionStorage.getItem("bairoaPlayerNumber"))||"";
+  if(name) sessionStorage.setItem("bairoaPlayerName",name);
+  if(number) sessionStorage.setItem("bairoaPlayerNumber",number);
+  return {name,number};
+}
+function refreshPlayerIdentity(){
+  const d=getBairoaChildData();
+  document.querySelectorAll(".playerIdentity").forEach(e=>e.remove());
+  if(!d.name && !d.number) return;
+  document.querySelectorAll(".screen,.activity").forEach(sec=>{
+    if(sec.id==="menuScreen") return;
+    const badge=document.createElement("div");
+    badge.className="playerIdentity";
+    badge.textContent=(d.name||"Jugador")+(d.number?("  #"+d.number):"");
+    sec.appendChild(badge);
+  });
+}
+document.addEventListener("input",e=>{
+  if(e.target && e.target.matches('input')) refreshPlayerIdentity();
+});
+setTimeout(refreshPlayerIdentity,200);
+
+document.addEventListener('click',()=>setTimeout(refreshPlayerIdentity,30));
+
+function refreshClubBrand(){
+ document.querySelectorAll(".clubBrand").forEach(e=>e.remove());
+ document.querySelectorAll(".screen,.activity").forEach(sec=>{
+   if(sec.id==="menuScreen") return;
+   const box=document.createElement("div");
+   box.className="clubBrand";
+   box.innerHTML='<div class="coach">Entrenador<br>Ramon</div>';
+   sec.appendChild(box);
+ });
+}
+setTimeout(refreshClubBrand,220);
+document.addEventListener("click",()=>setTimeout(refreshClubBrand,35));
+
+</script>
+<section id="activity4" class="activity" style="display:none">
+  <h2>⚽ APRENDE LOS 5 SAQUES</h2>
+  <p class="a4intro">Escoge un saque. Primero mira la demostración y luego practica.</p>
+  <div class="kickTabs">
+    <button onclick="openKickLesson(1)">S1<br><small>INICIAL</small></button>
+    <button onclick="openKickLesson(2)">S2<br><small>BANDA</small></button>
+    <button onclick="openKickLesson(3)">S3<br><small>ESQUINA</small></button>
+    <button onclick="openKickLesson(4)">S4<br><small>S4 META · MANOS</small></button>
+    <button onclick="openKickLesson(5)">S5<br><small>S5 META · PIE</small></button>
+  </div>
+  <div id="kickLesson" class="kickLesson">
+    <h3 id="kickTitle">S1 – SAQUE INICIAL</h3>
+    <div class="miniField">
+      <div class="halfLine"></div><div class="centerCircle"></div>
+      <div class="goal goalLeft"><span></span></div>
+      <div class="goal goalRight"><span></span></div>
+      <div class="penaltyBox penaltyLeft"></div>
+      <div class="goalBox goalBoxLeft"></div>
+      <div class="penaltyBox penaltyRight"></div>
+      <div class="goalBox goalBoxRight"></div>
+      <div class="centerSpot"></div>
+      <svg id="s1Arrows" class="s1Arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Direcciones del saque inicial">
+        <defs><marker id="arrowHeadS1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#ffe600"/></marker></defs>
+        <line x1="49" y1="49" x2="39" y2="36" class="s1PassLine" marker-end="url(#arrowHeadS1)"/>
+        <line x1="49" y1="52" x2="46" y2="68" class="s1PassLine" marker-end="url(#arrowHeadS1)"/>
+      </svg>
+
+      <div id="kickPlayer" class="kickPlayer">🧒</div>
+      <div id="kickBall" class="kickBall">⚽</div>
+      <div id="kickTarget" class="kickTarget">⭐</div>
+      <div id="kickMethodIcon" class="kickMethodIcon" style="display:none"></div>
+      <div id="s4HandsCue" class="s4HandsCue keeperCue keeperHands" style="display:none">🙌</div>
+      <div id="s4Dir1" class="s4Direction" style="display:none"></div>
+      <div id="s4Dir2" class="s4Direction" style="display:none"></div>
+      <div id="s4Dir3" class="s4Direction" style="display:none"></div>
+      <div id="s4Dir4" class="s4Direction" style="display:none"></div>
+      <div id="s4Dir5" class="s4Direction" style="display:none"></div>
+      <div id="s5ShoeCue" class="s5ShoeCue s5KeeperKick" style="display:none" aria-label="Portero pateando">👟</div>
+      <div id="s5Dir1" class="s5Direction" style="display:none"></div>
+      <div id="s5Dir2" class="s5Direction" style="display:none"></div>
+      <div id="s5Dir3" class="s5Direction" style="display:none"></div>
+      <div id="s5Dir4" class="s5Direction" style="display:none"></div>
+      <div id="s5Dir5" class="s5Direction" style="display:none"></div>
+      <div id="s2Arrow1" class="s2Direction" style="display:none"></div>
+      <div id="s2Arrow2" class="s2Direction" style="display:none"></div>
+      <div id="s2Arrow3" class="s2Direction" style="display:none"></div>
+      <div id="s2ZoneTop" class="s2ThrowZone" style="display:none"></div>
+      <div id="s2ZoneBottom" class="s2ThrowZone" style="display:none"></div>
+      <div id="s2BottomBall" class="s2ExampleBall" style="display:none">⚽</div>
+      <div id="s2BottomHands" class="s2ExampleHands" style="display:none">🙌</div>
+      <div id="s2BottomArrow1" class="s2Direction" style="display:none"></div>
+      <div id="s2BottomArrow2" class="s2Direction" style="display:none"></div>
+      <div id="s2BottomArrow3" class="s2Direction" style="display:none"></div>
+      <div id="s2TopRightBall" class="s2ExampleBall" style="display:none">⚽</div>
+      <div id="s2TopRightHands" class="s2ExampleHands" style="display:none">🙌</div>
+      <div id="s2TopRightArrow1" class="s2Direction" style="display:none"></div>
+      <div id="s2TopRightArrow2" class="s2Direction" style="display:none"></div>
+      <div id="s2TopRightArrow3" class="s2Direction" style="display:none"></div>
+      <div id="s2BottomLeftBall" class="s2ExampleBall" style="display:none">⚽</div>
+      <div id="s2BottomLeftHands" class="s2ExampleHands" style="display:none">🙌</div>
+      <div id="s2BottomLeftArrow1" class="s2Direction" style="display:none"></div>
+      <div id="s2BottomLeftArrow2" class="s2Direction" style="display:none"></div>
+      <div id="s2BottomLeftArrow3" class="s2Direction" style="display:none"></div>
+      <div id="s3ArcTop" class="s3CornerArc" style="display:none"></div>
+      <div id="s3ArcBottom" class="s3CornerArc" style="display:none"></div>
+      <div id="s3Arrow1" class="s3Arrow" style="display:none"></div>
+      <div id="s3Arrow2" class="s3Arrow" style="display:none"></div>
+      <div id="s3Arrow3" class="s3Arrow" style="display:none"></div>
+      <div id="s3TopBall" class="s2ExampleBall" style="display:none">⚽</div>
+      <div id="s3TopShoe" class="kickIcon" style="display:none">👟</div>
+      <div id="s3BottomShoe" class="kickIcon" style="display:none">👟</div>
+      <div id="s3TopArrow1" class="s3Arrow" style="display:none"></div>
+      <div id="s3TopArrow2" class="s3Arrow" style="display:none"></div>
+      <div id="s3TopArrow3" class="s3Arrow" style="display:none"></div>
+    </div>
+    <div id="kickSteps" class="kickSteps"></div>
+    <div class="kickActions">
+      <button onclick="demoKick()">▶ VER DEMOSTRACIÓN</button>
+      <button onclick="startKickPractice()">🎯 AHORA TÚ</button>
+      <button onclick="speakKick()">🔊 ESCUCHAR</button>
+    </div>
+    <div id="kickPractice" class="kickPractice" style="display:none">
+      <p id="practiceQuestion"></p>
+      <div id="practiceChoices"></div>
+      <p id="practiceResult"></p>
+    </div>
+  </div>
+  <button class="backBtn" onclick="goHomeFromActivity4()">⬅ VOLVER AL MENÚ</button>
+</section>
+
+<script>
+const kickLessons={
+ 1:{title:"S1 – SAQUE INICIAL",steps:["1. El balón comienza quieto en el centro.","2. Puedes hacer un pase corto en diagonal hacia el lado izquierdo.","3. También puedes hacer un pase corto hacia el lado, muy cerca de la línea central.","4. Después del pase, comienza el juego."],
+ speech:"Saque inicial. El balón comienza quieto en el centro. Puedes hacer un pase corto en diagonal hacia el lado izquierdo, o un pase corto hacia el lado muy cerca de la línea central. Después del pase, comienza el juego.",
+ q:"¿Cuál de estos dos pases quieres practicar?",choices:["↖ PASE DIAGONAL","↙ PASE CERCA DE LA LÍNEA"],correct:0,start:["50%","50%"],ball:["50%","50%"],target:["39%","36%"]},
+ 2:{title:"S2 – SAQUE DE BANDA",
+steps:["1. El balón sale desde una de las líneas laterales (arriba o abajo).","2. Colócate fuera de la cancha sin tocar la línea blanca.","3. Sujeta el balón con las dos manos.","4. Lánzalo con las manos hacia un compañero dentro de la cancha."],
+speech:"Saque de banda. Colócate fuera de la cancha, sin tocar la línea blanca. Sujeta el balón con las dos manos y lánzalo hacia un compañero dentro de la cancha. Puedes dirigirlo hacia diferentes lugares.",
+q:"¿Con qué hacemos el saque de banda?",choices:["🙌 CON LAS MANOS","👟 CON EL PIE"],correct:0,start:["6%","20%"],ball:["24%","-4%"],target:["34%","18%"]},
+ 3:{title:"S3 – SAQUE DE ESQUINA",steps:["1. Coloca la pelota en la esquina del lado contrario.","2. Mira dónde están tus compañeros.","3. Toma un poco de impulso.","4. Golpea la pelota con el pie hacia un compañero."],
+ speech:"Saque de esquina. Coloca la pelota en la esquina, mira a tus compañeros y golpéala con el pie hacia uno de ellos.",
+ q:"¿Desde dónde se hace?",choices:["🚩 DESDE LA ESQUINA","⭕ DESDE EL CENTRO"],correct:0,start:["91%","85%"],ball:["95%","91%"],target:["72%","67%"]},
+ 4:{title:"S4 – SAQUE DE META CON LAS MANOS",steps:["1. El saque se hace desde el área frente a la portería.","2. Sujeta bien la pelota con las manos.","3. Busca a un defensa libre.","4. Lanza la pelota con las manos hacia el defensa."],
+ speech:"Saque de meta con las manos. Se saca desde el área frente a la portería. El portero busca a un defensa libre y le lanza la pelota con las manos.",
+ q:"¿Con qué hacemos este saque?",choices:["🙌 CON LAS MANOS","👟 CON EL PIE"],correct:0,start:["10%","50%"],ball:["12%","50%"],target:["31%","50%"]},
+ 5:{title:"S5 – SAQUE DE META CON EL PIE",steps:["1. El saque se hace desde el área frente a la portería.","2. Mira dónde está tu defensa.","3. Toma impulso sin apresurarte.","4. Golpea la pelota con el pie hacia el defensa."],
+ speech:"Saque de meta con el pie. Se saca desde el área frente a la portería. Mira a tu defensa y pásala con el pie.",
+ q:"¿Con qué se envía la pelota?",choices:["🦶 CON EL PIE","🙌 CON LAS MANOS"],correct:0,start:["10%","55%"],ball:["15%","55%"],target:["34%","55%"]}
+};
+let currentKick=1;
+function openKickLesson(n){
+ document.body.classList.remove("kick-s4","kick-s5");
+ if(n===4) document.body.classList.add("kick-s4");
+ if(n===5) document.body.classList.add("kick-s5");
+ document.querySelectorAll(".kickTabs button").forEach((btn,i)=>{
+   btn.classList.toggle("kickSelected", i===n-1);
+   btn.setAttribute("aria-pressed", i===n-1 ? "true" : "false");
+ });
+ currentKick=n; const k=kickLessons[n];
+ document.getElementById("kickTitle").textContent=k.title;
+ document.getElementById("kickSteps").innerHTML=k.steps.map(x=>"<div>"+x+"</div>").join("");
+ const pl=document.getElementById("kickPlayer"),b=document.getElementById("kickBall"),t=document.getElementById("kickTarget"),ar=document.getElementById("s1Arrows");
+ pl.style.display=n===1?"none":"block"; t.style.display=n===1?"none":"block"; ar.style.display=n===1?"block":"none";
+ pl.style.left=k.start[0];pl.style.top=k.start[1];b.style.left=k.ball[0];b.style.top=k.ball[1];t.style.left=k.target[0];t.style.top=k.target[1];
+ 
+ document.getElementById("kickPractice").style.display="none";
+ const icon=document.getElementById("kickMethodIcon");
+ const a1=document.getElementById("s2Arrow1"),a2=document.getElementById("s2Arrow2"),a3=document.getElementById("s2Arrow3");
+ const zTop=document.getElementById("s2ZoneTop"),zBottom=document.getElementById("s2ZoneBottom");
+ const bb=document.getElementById("s2BottomBall"),bh=document.getElementById("s2BottomHands");
+ const ba1=document.getElementById("s2BottomArrow1"),ba2=document.getElementById("s2BottomArrow2"),ba3=document.getElementById("s2BottomArrow3");
+ const trb=document.getElementById("s2TopRightBall"),trh=document.getElementById("s2TopRightHands");
+ const tra1=document.getElementById("s2TopRightArrow1"),tra2=document.getElementById("s2TopRightArrow2"),tra3=document.getElementById("s2TopRightArrow3");
+ const blb=document.getElementById("s2BottomLeftBall"),blh=document.getElementById("s2BottomLeftHands");
+ const bla1=document.getElementById("s2BottomLeftArrow1"),bla2=document.getElementById("s2BottomLeftArrow2"),bla3=document.getElementById("s2BottomLeftArrow3");
+ const s3at=document.getElementById("s3ArcTop"),s3ab=document.getElementById("s3ArcBottom");
+ const s3a1=document.getElementById("s3Arrow1"),s3a2=document.getElementById("s3Arrow2"),s3a3=document.getElementById("s3Arrow3");
+ const s3tb=document.getElementById("s3TopBall"),s3ts=document.getElementById("s3TopShoe"),s3bs=document.getElementById("s3BottomShoe");
+ const s3ta1=document.getElementById("s3TopArrow1"),s3ta2=document.getElementById("s3TopArrow2"),s3ta3=document.getElementById("s3TopArrow3");
+ const s4h=document.getElementById("s4HandsCue");
+ const s4d1=document.getElementById("s4Dir1"),s4d2=document.getElementById("s4Dir2"),s4d3=document.getElementById("s4Dir3"),s4d4=document.getElementById("s4Dir4"),s4d5=document.getElementById("s4Dir5");
+ const s5shoe=document.getElementById("s5ShoeCue");
+ const s5d1=document.getElementById("s5Dir1"),s5d2=document.getElementById("s5Dir2"),s5d3=document.getElementById("s5Dir3"),s5d4=document.getElementById("s5Dir4"),s5d5=document.getElementById("s5Dir5");
+ [a1,a2,a3,zTop,zBottom,bb,bh,ba1,ba2,ba3,trb,trh,tra1,tra2,tra3,blb,blh,bla1,bla2,bla3,s3at,s3ab,s3a1,s3a2,s3a3,s3tb,s3ts,s3bs,s3ta1,s3ta2,s3ta3,s4h,s4d1,s4d2,s4d3,s4d4,s4d5,s5shoe,s5d1,s5d2,s5d3,s5d4,s5d5].forEach(a=>a.style.display="none");
+ icon.style.display="none";
+ if(n===1){
+   icon.textContent="👟"; icon.style.display="block"; icon.style.left="55%"; icon.style.top="57%";
+ }
+ if(n===2){
+   /* Zonas válidas: laterales superior e inferior de la mitad izquierda */
+   zTop.style.display="block"; zBottom.style.display="block";
+   /* Ejemplo de saque: fuera de la línea lateral superior */
+   b.style.left="24%"; b.style.top="-4%";
+   icon.textContent="🙌"; icon.style.display="block"; icon.style.left="24%"; icon.style.top="-13%";
+   const setup=(el,left,top,width,angle)=>{el.style.display="block";el.style.left=left;el.style.top=top;el.style.width=width;el.style.transform=`rotate(${angle}deg)`};
+   /* Tres posibles direcciones desde el lateral hacia dentro */
+   setup(a1,"25%","1%","105px",28);
+   setup(a2,"25%","1%","115px",48);
+   setup(a3,"25%","1%","100px",66);
+   /* Segundo ejemplo: lateral inferior, lado contrario */
+   bb.style.display="block"; bb.style.left="74%"; bb.style.top="104%";
+   bh.style.display="block"; bh.style.left="74%"; bh.style.top="113%";
+   setup(ba1,"73%","99%","105px",-152);
+   setup(ba2,"73%","99%","115px",-132);
+   setup(ba3,"73%","99%","100px",-114);
+
+   /* Tercer ejemplo: lateral superior, lado derecho */
+   trb.style.display="block"; trb.style.left="72%"; trb.style.top="-4%";
+   trh.style.display="block"; trh.style.left="72%"; trh.style.top="-13%";
+   setup(tra1,"73%","1%","105px",152);
+   setup(tra2,"73%","1%","115px",132);
+   setup(tra3,"73%","1%","100px",114);
+
+   /* Cuarto ejemplo: lateral inferior, lado izquierdo */
+   blb.style.display="block"; blb.style.left="26%"; blb.style.top="104%";
+   blh.style.display="block"; blh.style.left="26%"; blh.style.top="113%";
+   setup(bla1,"27%","99%","105px",-28);
+   setup(bla2,"27%","99%","115px",-48);
+   setup(bla3,"27%","99%","100px",-66);
+ }
+
+ if(n===3){
+   s3at.style.display="block"; s3ab.style.display="block";
+   b.style.left="95%"; b.style.top="91%";
+   /* Zapatos dedicados a las dos esquinas; evita el icono pequeño accidental del centro */
+   icon.style.display="none";
+   s3bs.style.display="block"; s3bs.style.left="101%"; s3bs.style.top="91%";
+   const setupS3=(el,left,top,width,angle)=>{
+     el.style.display="block"; el.style.left=left; el.style.top=top;
+     el.style.width=width; el.style.transform=`rotate(${angle}deg)`;
+   };
+   /* Tres opciones desde la esquina, orientadas más hacia la izquierda */
+   /* Inferior derecha: corta, mediana y larga; puntas separadas */
+   setupS3(s3a1,"94%","89%","155px",-166);
+   setupS3(s3a2,"94%","89%","220px",-148);
+   setupS3(s3a3,"94%","89%","285px",-130);
+
+   /* Segundo ejemplo S3: esquina superior derecha del lado contrario */
+   s3tb.style.display="block"; s3tb.style.left="95%"; s3tb.style.top="1%";
+   s3ts.style.display="block"; s3ts.style.left="101%"; s3ts.style.top="1%";
+   /* Superior derecha: corta, mediana y larga; puntas separadas */
+   setupS3(s3ta1,"94%","11%","155px",166);
+   setupS3(s3ta2,"94%","11%","220px",148);
+   setupS3(s3ta3,"94%","11%","285px",130);
+ }
+ if(n===4){
+   /* Manos a la izquierda del balón y cinco opciones de pase */
+   pl.style.display="none"; t.style.display="none";
+   b.style.left="12%"; b.style.top="50%";
+   s4h.style.display="block"; s4h.style.left="5.0%"; s4h.style.top="45%";
+   const setupS4=(el,left,top,width,angle)=>{
+     el.style.display="block"; el.style.left=left; el.style.top=top;
+     el.style.width=width; el.style.transform=`rotate(${angle}deg)`;
+   };
+   setupS4(s4d1,"14%","50%","175px",-48);
+   setupS4(s4d2,"14%","50%","205px",-25);
+   setupS4(s4d3,"14%","50%","230px",0);
+   setupS4(s4d4,"14%","50%","205px",25);
+   setupS4(s4d5,"14%","50%","175px",48);
+ }
+ if(n===5){
+   pl.style.display="none"; t.style.display="none";
+   b.style.left="12%"; b.style.top="50%";
+   s5shoe.style.display="block"; s5shoe.style.left="5.0%"; s5shoe.style.top="45%";
+   const setupS5=(el,left,top,width,angle)=>{
+     el.style.display="block"; el.style.left=left; el.style.top=top;
+     el.style.width=width; el.style.transform=`rotate(${angle}deg)`;
+   };
+   setupS5(s5d1,"14%","50%","175px",-48);
+   setupS5(s5d2,"14%","50%","205px",-25);
+   setupS5(s5d3,"14%","50%","230px",0);
+   setupS5(s5d4,"14%","50%","205px",25);
+   setupS5(s5d5,"14%","50%","175px",48);
+ }
+ speakKick();
+}
+function speakKick(){
+ const u=new SpeechSynthesisUtterance(kickLessons[currentKick].speech);u.lang="es-ES";u.rate=.88;
+ speechSynthesis.cancel();u.voice=bairoaVoice || selectBairoaVoice();
+u.lang=(u.voice&&u.voice.lang)||"es-US";
+u.rate=.78;
+u.pitch=1.0;
+speechSynthesis.cancel();
+speechSynthesis.speak(u);
+}
+
+function animateS4FiveDirections(){
+ const b=document.getElementById("kickBall");
+ const routes=[["29%","20%"],["39%","34%"],["46%","50%"],["39%","66%"],["29%","80%"]];
+ const reset=()=>{b.style.transition="none";b.style.left="12%";b.style.top="50%";};
+ reset();
+ routes.forEach((r,i)=>{
+   setTimeout(()=>{
+     reset();
+     setTimeout(()=>{b.style.transition="all .9s linear";b.style.left=r[0];b.style.top=r[1];},100);
+   },i*1250);
+ });
+ setTimeout(reset,routes.length*1250+250);
+}
+
+
+function animateS5FiveDirections(){
+ const b=document.getElementById("kickBall");
+ const routes=[["29%","20%"],["39%","34%"],["46%","50%"],["39%","66%"],["29%","80%"]];
+ const reset=()=>{b.style.transition="none";b.style.left="12%";b.style.top="50%";};
+ reset();
+ routes.forEach((r,i)=>{
+   setTimeout(()=>{
+     reset();
+     setTimeout(()=>{b.style.transition="all .9s linear";b.style.left=r[0];b.style.top=r[1];},100);
+   },i*1250);
+ });
+ setTimeout(reset,routes.length*1250+250);
+}
+
+function demoKick(){
+ const k=kickLessons[currentKick],b=document.getElementById("kickBall");
+ if(currentKick===4){
+   speechSynthesis.cancel();
+   animateS4FiveDirections();
+   speakKick();
+   return;
+ }
+ if(currentKick===5){
+   speechSynthesis.cancel();
+   animateS5FiveDirections();
+   speakKick();
+   return;
+ }
+ if(currentKick===1){
+   speechSynthesis.cancel();
+   b.style.transition="none"; b.style.left="50%"; b.style.top="50%";
+   setTimeout(()=>{b.style.transition="all 1.05s ease"; b.style.left="39%"; b.style.top="36%";},350);
+   setTimeout(()=>{b.style.transition="none"; b.style.left="50%"; b.style.top="50%";},1800);
+   setTimeout(()=>{b.style.transition="all 1.05s ease"; b.style.left="46%"; b.style.top="68%";},2150);
+   setTimeout(()=>{b.style.transition="none"; b.style.left="50%"; b.style.top="50%";},3650);
+   speakKick(); return;
+ }
+ if(currentKick===3){
+   speechSynthesis.cancel();
+   const start=()=>{b.style.transition="none";b.style.left="95%";b.style.top="91%";};
+   start();
+   setTimeout(()=>{b.style.transition="all 1.05s ease";b.style.left="68%";b.style.top="76%";},350);
+   setTimeout(start,1650);
+   setTimeout(()=>{b.style.transition="all 1.05s ease";b.style.left="64%";b.style.top="56%";},2000);
+   setTimeout(start,3300);
+   setTimeout(()=>{b.style.transition="all 1.05s ease";b.style.left="61%";b.style.top="34%";},3650);
+   setTimeout(start,5000);
+   speakKick(); return;
+ }
+ b.style.left=k.ball[0];b.style.top=k.ball[1];
+ setTimeout(()=>{b.style.left=k.target[0];b.style.top=k.target[1]},500);
+ setTimeout(()=>{
+   b.style.transition="none";
+   b.style.left=k.ball[0]; b.style.top=k.ball[1];
+   setTimeout(()=>{b.style.transition="all .75s ease"},40);
+ },1800);
+ speakKick();
+}
+function startKickPractice(){
+ const k=kickLessons[currentKick],box=document.getElementById("kickPractice");
+ if(currentKick===4) animateS4FiveDirections();
+ if(currentKick===5) animateS5FiveDirections();
+ box.style.display="block";document.getElementById("practiceQuestion").textContent=k.q;
+ document.getElementById("practiceResult").textContent="";
+ document.getElementById("practiceChoices").innerHTML=k.choices.map((c,i)=>`<button onclick="answerKick(${i})">${c}</button>`).join("");
+}
+function answerKick(i){
+ if(currentKick===1){
+   const b=document.getElementById("kickBall");
+   b.style.transition="none";b.style.left="50%";b.style.top="50%";
+   setTimeout(()=>{b.style.transition="all 1.05s ease"; if(i===0){b.style.left="39%";b.style.top="36%";}else{b.style.left="46%";b.style.top="68%";}},150);
+   document.getElementById("practiceResult").textContent="¡MUY BIEN! Los dos son pases cortos del saque inicial.";
+   const u=new SpeechSynthesisUtterance("¡Muy bien!");u.lang="es-ES";u.voice=bairoaVoice || selectBairoaVoice();
+u.lang=(u.voice&&u.voice.lang)||"es-US";
+u.rate=.78;
+u.pitch=1.0;
+speechSynthesis.cancel();
+speechSynthesis.speak(u);return;
+ }
+ const ok=i===kickLessons[currentKick].correct;
+ document.getElementById("practiceResult").textContent=ok?"⭐ ¡MUY BIEN! ¡CORRECTO!":"Esa no es la respuesta correcta. Inténtalo otra vez.";
+ const u=new SpeechSynthesisUtterance(ok?"¡Muy bien! ¡Correcto!":"Esa no es la respuesta correcta. Inténtalo otra vez.");
+ u.lang="es-ES";u.voice=bairoaVoice || selectBairoaVoice();
+ u.lang=(u.voice&&u.voice.lang)||"es-US";
+ u.rate=.78;u.pitch=1.0;
+ speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+
+if(typeof showMainMenu!=="function"){
+ window.showMainMenu=function(){
+   document.getElementById("activity4").style.display="none";
+   const a=document.querySelector(".activity"); if(a)a.style.display="";
+ };
+}
+
+function openActivity4(){
+  speechSynthesis.cancel();
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  document.getElementById("activity4").style.display="block";
+  openKickLesson(1);
+  window.scrollTo(0,0);
+}
+function goHomeFromActivity4(){
+  speechSynthesis.cancel();
+  document.getElementById("activity4").style.display="none";
+  showScreen("menuScreen");
+  window.scrollTo(0,0);
+}
+
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+  const inputs=[...document.querySelectorAll("input")];
+  const nameInput=inputs.find(x=>/name|nombre/i.test((x.id||"")+" "+(x.name||"")+" "+(x.placeholder||""))) || inputs[0];
+  const numberInput=inputs.find(x=>/number|numero|número/i.test((x.id||"")+" "+(x.name||"")+" "+(x.placeholder||""))) || inputs[1];
+  const cleanName=v=>(v||"").replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g,"");
+  const cleanNum=v=>(v||"").replace(/\D/g,"");
+  if(nameInput){
+    nameInput.type="text";
+    nameInput.value=cleanName(nameInput.value);
+    nameInput.addEventListener("input",()=>{nameInput.value=cleanName(nameInput.value);});
+  }
+  if(numberInput){
+    numberInput.type="text";
+    numberInput.inputMode="numeric";
+    numberInput.pattern="[0-9]*";
+    numberInput.value=cleanNum(numberInput.value);
+    numberInput.addEventListener("input",()=>{numberInput.value=cleanNum(numberInput.value);});
+  }
+  // Limpiar también el rótulo del jugador al cargar: "David23 #29" -> "David #29".
+  const cleanPlayerLabels=()=>{
+    document.querySelectorAll("*").forEach(el=>{
+      if(el.children.length===0 && /•\s*#/.test(el.textContent||"")){
+        let t=el.textContent;
+        t=t.replace(/•\s*#/g,"#").replace(/([A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)\d+\s*#/g,"$1 #");
+        el.textContent=t;
+      }
+    });
+  };
+  cleanPlayerLabels();
+  setTimeout(cleanPlayerLabels,100);
+});
+</script>
+
+<script>
+(function(){
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  function pct(v){return parseFloat(String(v).replace("%",""))||0;}
+  async function animateCornerOptions(ball, arrows){
+    if(!ball) return;
+    const startL=ball.style.left, startT=ball.style.top;
+    for(const a of arrows){
+      if(!a || getComputedStyle(a).display==="none") continue;
+      // La flecha parte cerca del balón y apunta hacia dentro.
+      const cs=getComputedStyle(a);
+      const len=parseFloat(cs.width)||parseFloat(a.style.width)||170;
+      const tr=a.style.transform||cs.transform||"";
+      const m=tr.match(/rotate\(([-\d.]+)deg\)/);
+      if(!m) continue;
+      const ang=parseFloat(m[1])*Math.PI/180;
+      const field=ball.parentElement.getBoundingClientRect();
+      const dx=Math.cos(ang)*len/field.width*100;
+      const dy=Math.sin(ang)*len/field.height*100;
+      const sl=pct(startL), st=pct(startT);
+      ball.style.transition="left 1.15s linear, top 1.15s linear";
+      ball.style.left=(sl+dx)+"%"; ball.style.top=(st+dy)+"%";
+      await wait(1250);
+      ball.style.transition="none"; ball.style.left=startL; ball.style.top=startT;
+      await wait(350);
+    }
+  }
+  document.addEventListener("DOMContentLoaded",()=>{
+    const tabs=[...document.querySelectorAll(".kickTabs button")];
+    const s3tab=tabs[2];
+    const topShoe=document.getElementById("s3TopShoe");
+    const botShoe=document.getElementById("s3BottomShoe");
+    const placeShoes=()=>{
+      if(!s3tab?.classList.contains("kickSelected")) return;
+      // Zapato a la derecha de cada balón; punta orientada hacia el balón.
+      if(topShoe){topShoe.style.left="98%";topShoe.style.top="-1%";topShoe.style.transform="scaleX(-1)";}
+      if(botShoe){botShoe.style.left="98%";botShoe.style.top="91%";botShoe.style.transform="scaleX(-1)";}
+      // Ocultar cualquier zapato genérico que haya quedado en el centro.
+      document.querySelectorAll(".kickIcon").forEach(x=>{
+        if(x.id!=="s3TopShoe" && x.id!=="s3BottomShoe") x.style.display="none";
+      });
+    };
+    tabs.forEach(b=>b.addEventListener("click",()=>setTimeout(placeShoes,0)));
+    placeShoes();
+
+    // Extender el botón de demostración existente: después de su acción normal,
+    // recorrer sucesivamente las tres opciones de cada esquina.
+    const demo=[...document.querySelectorAll("button")].find(b=>/VER DEMOSTRACIÓN/i.test(b.textContent||""));
+    if(demo){
+      demo.addEventListener("click",async()=>{
+        if(!s3tab?.classList.contains("kickSelected")) return;
+        await wait(300);
+        const bottom=document.getElementById("lessonBall") || document.querySelector("#activity4 .lessonBall");
+        const top=document.getElementById("s3TopBall");
+        await animateCornerOptions(top,[
+          document.getElementById("s3TopArrow1"),
+          document.getElementById("s3TopArrow2"),
+          document.getElementById("s3TopArrow3")
+        ]);
+        await animateCornerOptions(bottom,[
+          document.getElementById("s3Arrow1"),
+          document.getElementById("s3Arrow2"),
+          document.getElementById("s3Arrow3")
+        ]);
+      });
+    }
+  });
+})();
+</script>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const inputs = Array.from(document.querySelectorAll("input"));
+  const nameInput = inputs.find(el => {
+    const k=((el.id||"")+" "+(el.name||"")+" "+(el.placeholder||"")).toLowerCase();
+    return k.includes("nombre") || k.includes("name");
+  });
+
+  if(nameInput){
+    nameInput.setAttribute("type","text");
+    nameInput.setAttribute("autocomplete","off");
+    nameInput.setAttribute("autocapitalize","characters");
+    nameInput.style.textTransform="uppercase";
+
+    const normalizeName = function(){
+      const pos=nameInput.selectionStart;
+      nameInput.value=nameInput.value
+        .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g,"")
+        .toUpperCase();
+      try{nameInput.setSelectionRange(pos,pos)}catch(e){}
+    };
+    nameInput.addEventListener("input", normalizeName);
+    nameInput.addEventListener("blur", normalizeName);
+    normalizeName();
+  }
+
+  // El número permanece como input normal y seleccionable.
+  inputs.forEach(el=>{
+    const k=((el.id||"")+" "+(el.name||"")+" "+(el.placeholder||"")).toLowerCase();
+    if(k.includes("numero") || k.includes("número") || k.includes("number")){
+      el.style.pointerEvents="auto";
+      el.removeAttribute("disabled");
+      el.removeAttribute("readonly");
+    }
+  });
+});
+</script>
+
+
+<style>
+.menuBtn.m5{background:#ff9f43}
+#finalScreen{padding:10px;text-align:center}
+#finalScreen .finalWrap{max-width:850px;margin:0 auto}
+#finalQuestion{font-size:21px;font-weight:900;color:#10257e;background:#fff1b8;border:3px solid #f1b51c;border-radius:13px;padding:10px;margin:8px 0}
+#finalMsg{font-size:17px;font-weight:800;min-height:26px;margin:7px 0;color:#10257e}
+#finalField{position:relative;width:840px;max-width:100%;aspect-ratio:2/1;margin:8px auto;background:url('campo_aprobado.png') center/100% 100% no-repeat;border:6px solid #fff;box-sizing:border-box;overflow:hidden}
+.finalHot{position:absolute;background:rgba(255,220,40,.15);border:3px dashed rgba(255,220,40,.35);border-radius:50%;cursor:pointer;display:none;z-index:8}
+#finalCenter{left:44%;top:38%;width:12%;height:24%}
+#finalDefense{left:20%;top:10%;width:23%;height:40%}
+#finalMid{left:30%;top:48%;width:28%;height:42%}
+#finalForward{left:57%;top:18%;width:27%;height:55%}
+#finalGoal{right:0;top:25%;width:17%;height:50%;border-radius:8px}
+#finalBall{position:absolute;left:49%;top:47%;font-size:38px;z-index:12;transition:left .9s ease,top .9s ease;filter:drop-shadow(1px 2px 1px #333)}
+#finalOptions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px auto;max-width:850px}
+.finalOption{font-size:17px;font-weight:900;padding:10px 16px;border:3px solid #222;border-radius:12px;background:white;cursor:pointer}
+.finalOption:hover{transform:scale(1.04)}
+#finalScore{display:inline-block;background:#fff1b8;border:3px solid #222;border-radius:12px;padding:7px 16px;font-size:18px;font-weight:900;color:#10257e}
+#finalHistory{display:none;max-width:560px;margin:8px auto;padding:10px;background:#fff;border:3px solid #10257e;border-radius:12px;text-align:left;font-size:15px;font-weight:800;color:#10257e}
+#finalHistory h3{margin:0 0 7px;text-align:center}
+.finalHistoryRow{padding:5px 3px;border-bottom:1px solid #ddd}
+#finalCue{position:absolute;display:none;z-index:14;font-size:46px;line-height:1;filter:drop-shadow(1px 2px 1px #333)}
+#finalOpponentKeeper{position:absolute;right:4.2%;top:36%;height:30%;width:auto;z-index:10;display:none;transform:scaleX(-1);filter:drop-shadow(2px 3px 2px rgba(0,0,0,.35));pointer-events:none}
+#finalOpponentLabel{position:absolute;right:1.8%;top:66%;z-index:13;display:none;font-size:12px;font-weight:1000;color:#111;background:#fff;border:2px solid #111;border-radius:8px;padding:2px 6px;pointer-events:none;white-space:nowrap}
+#finalKeeperEight{position:absolute;right:8.6%;top:43.5%;z-index:11;display:none;font-size:16px;font-weight:1000;color:#111;background:#ffd84d;border:2px solid #111;border-radius:50%;width:24px;height:24px;line-height:20px;text-align:center;pointer-events:none}
+#finalCelebration{display:none;font-size:42px;font-weight:1000;color:#e12b2b;text-shadow:2px 2px #ffd84d;margin:6px}
+@media(max-width:700px){#finalBall{font-size:28px}.finalOption{font-size:15px;padding:8px 11px}}
+</style>
+<section id="finalScreen" class="screen">
+ <div class="finalWrap">
+  <div id="finalScore">ACIERTOS: <span id="finalStars">0</span>/18 🌟 &nbsp; | &nbsp; FALLOS: <span id="finalFails">0</span> ❌ &nbsp; | &nbsp; PREGUNTA: <span id="finalRound">—</span>/18</div>
+  <div id="finalHistory"></div>
+  <div id="finalQuestion">Presiona COMENZAR para iniciar el Partido Final</div>
+  <div id="finalMsg">Aquí usarás todo lo que aprendiste.</div>
+  <div id="finalField">
+   <button class="finalHot" id="finalCenter" onclick="finalPickPlace('CENTRO')" aria-label="Centro"></button>
+   <button class="finalHot" id="finalDefense" onclick="finalPickPlace('DEFENSA')" aria-label="Defensa"></button>
+   <button class="finalHot" id="finalMid" onclick="finalPickPlace('MEDIOCAMPISTA')" aria-label="Mediocampista"></button>
+   <button class="finalHot" id="finalForward" onclick="finalPickPlace('DELANTERO')" aria-label="Delantero"></button>
+   <button class="finalHot" id="finalGoal" onclick="finalPickPlace('PORTERIA')" aria-label="Portería"></button>
+   <img id="finalOpponentKeeper" src="portero.png" alt="Portero contrario" style="filter:sepia(1) saturate(6) hue-rotate(355deg) brightness(1.18) drop-shadow(2px 3px 2px rgba(0,0,0,.35));">
+   <div id="finalKeeperEight">8</div>
+   <div id="finalOpponentLabel">PORTERO CONTRARIO</div>
+   <div id="finalBall">⚽</div>
+   <div id="finalCue"></div>
+  </div>
+  <div id="finalOptions"></div>
+  <div id="finalCelebration">⚽ ¡GOOOOOOOL! 🏆</div>
+  <div class="controls"><button class="start" onclick="startFinalGame()">▶ COMENZAR</button><button class="repeat" onclick="repeatFinalQuestion()">🔊 REPETIR</button><button class="reset" onclick="resetFinalGame()">↻ REINICIAR</button><button class="repeat" onclick="toggleFinalHistory()">📅 MIS RESULTADOS</button><button class="home" onclick="goHomeFromFinal()">🏠 MENÚ</button></div>
+ </div>
+</section>
+<script>
+let finalStep=-1,finalStars=0,finalFails=0,finalLocked=false,finalLast="";
+let finalTimers=[];
+function finalLater(fn,ms){const id=setTimeout(()=>{finalTimers=finalTimers.filter(x=>x!==id);fn()},ms);finalTimers.push(id);return id}
+function clearFinalTimers(){finalTimers.forEach(clearTimeout);finalTimers=[]}
+const finalQuestions=[
+ {q:"¿Dónde comienza el partido? Toca el lugar correcto en la cancha.",type:"place",ans:"CENTRO"},
+ {q:"¿Cuál es el número del saque inicial?",type:"option",ans:"S1",opts:["S1","S2","S3","S4","S5"]},
+ {q:"¿Quién hace el saque inicial?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA","DELANTERO"]},
+ {q:"¿Con qué se hace el saque inicial?",type:"option",ans:"PIE",opts:["PIE","MANOS"],icons:true},
+ {q:"¿Hacia quién se hace el pase inicial?",type:"option",ans:"MEDIOCAMPISTA",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA"]},
+ {q:"El mediocampista recibió la pelota. ¿A quién debe devolvérsela?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","DELANTERO"]},
+ {q:"El delantero se acerca a la portería con toques cortos. ¿Qué debe hacer ahora?",type:"option",ans:"👟 ⚽",opts:["👟 ⚽","PASAR","RETROCEDER"]},
+ {q:"El portero contrario atrapó la pelota. ¿Quién tiene ahora la pelota?",type:"option",ans:"PORTERO CONTRARIO",opts:["DELANTERO","MEDIOCAMPISTA","PORTERO CONTRARIO"]},
+ {q:"El portero atrapó la pelota. ¿Cuál saque debe hacer?",type:"option",ans:"S4",opts:["S3","S4","S5"]},
+ {q:"¿Con qué se hace el saque S4?",type:"option",ans:"MANOS",opts:["PIE","MANOS"],icons:true},
+ {q:"¿Hacia dónde debe salir la pelota en el saque S4?",type:"option",ans:"HACIA EL CAMPO",opts:["HACIA EL CAMPO","FUERA DEL CAMPO"]},
+ {q:"La pelota salió por un lado de la portería y cruzó la línea de meta. ¿Quién hace el saque?",type:"option",ans:"PORTERO CONTRARIO",opts:["DELANTERO","MEDIOCAMPISTA","PORTERO CONTRARIO"]},
+ {q:"¿Cuál saque corresponde cuando el portero saca con el pie desde la portería?",type:"option",ans:"S5",opts:["S3","S4","S5"]},
+ {q:"¿Con qué se hace el saque S5?",type:"option",ans:"PIE",opts:["PIE","MANOS"],icons:true},
+ {q:"¿Hacia dónde debe salir la pelota en el saque S5?",type:"option",ans:"HACIA EL CAMPO",opts:["HACIA EL CAMPO","FUERA DEL CAMPO"]},
+ {q:"Si la pelota sale por una línea lateral, ¿qué saque corresponde?",type:"option",ans:"S2",opts:["S1","S2","S3","S4","S5"]},
+ {q:"¿Con qué se hace el saque de banda S2?",type:"option",ans:"MANOS",opts:["PIE","MANOS"],icons:true},
+ {q:"Si la pelota sale por una esquina, ¿qué saque corresponde?",type:"option",ans:"S3",opts:["S1","S2","S3","S4","S5"]}
+];
+function finalSpeak(t,done){finalLast=t;speak(t,done)}
+function openFinalGame(){speechSynthesis.cancel();document.getElementById('activity4').style.display='none';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('finalScreen').classList.add('active');resetFinalGame();refreshPlayerIdentity();refreshClubBrand();window.scrollTo(0,0)}
+function goHomeFromFinal(){speechSynthesis.cancel();clearFinalTimers();resetFinalGame();showScreen('menuScreen');window.scrollTo(0,0)}
+function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalFails=0;finalLocked=false;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
+function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;finalFails=0;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
+function repeatFinalQuestion(){if(finalLast)finalSpeak(finalLast)}
+function hideFinalHots(){document.querySelectorAll('.finalHot').forEach(x=>x.style.display='none')}
+function finalLabel(o,z){if(z.icons){if(o==='PIE')return '👟';if(o==='MANOS')return '✋'}return o}
+function showFinalQuestion(){hideFinalCue();if(finalStep>=finalQuestions.length)return finishFinalGame();finalLocked=false;hideFinalHots();$('finalOptions').innerHTML='';$('finalRound').textContent=finalStep+1;let z=finalQuestions[finalStep];$('finalQuestion').textContent=z.q;$('finalMsg').textContent=z.type==='place'?'👆 Toca el lugar correcto en la cancha.':'Escoge la respuesta correcta.';if(z.type==='place'){let ids={CENTRO:'finalCenter',DEFENSA:'finalDefense',MEDIOCAMPISTA:'finalMid',DELANTERO:'finalForward',PORTERIA:'finalGoal'};$(ids[z.ans]).style.display='block'}else{z.opts.forEach(o=>{let b=document.createElement('button');b.className='finalOption';b.textContent=finalLabel(o,z);if(z.icons)b.style.fontSize='34px';b.onclick=()=>finalAnswer(o);$('finalOptions').appendChild(b)})}finalSpeak(z.q)}
+function finalPickPlace(v){if(finalStep<0||finalLocked)return;let z=finalQuestions[finalStep];if(z.type!=='place')return;finalAnswer(v)}
+function finalAnswer(v){if(finalLocked)return;let z=finalQuestions[finalStep];if(v!==z.ans){finalLocked=true;finalFails++;$('finalFails').textContent=finalFails;$('finalMsg').textContent='🙂 Esa no es la respuesta correcta. Inténtalo otra vez.';return finalSpeak('Esa no es la respuesta correcta. Inténtalo otra vez.',()=>{finalLocked=false})}finalLocked=true;finalStars++;$('finalStars').textContent=finalStars;$('finalMsg').textContent='⭐ ¡MUY BIEN! ¡CORRECTO!';animateFinalStep(finalStep);finalSpeak('¡Muy bien! ¡Correcto!',()=>advanceFinal(finalStep))}
+function moveFinalBall(l,t,d=900){$('finalBall').style.transitionDuration=d+'ms';$('finalBall').style.left=l;$('finalBall').style.top=t}
+function animateFinalStep(i){if(i===0)moveFinalBall('49%','47%');if(i===4)moveFinalBall('42%','66%');if(i===5)moveFinalBall('67%','42%')}
+function nextFinal(delay=650){finalLater(()=>{finalStep++;showFinalQuestion()},delay)}
+function showFinalCue(icon,l,t){let c=$('finalCue');c.textContent=icon;c.style.left=l;c.style.top=t;c.style.display='block'}
+function hideFinalCue(){$('finalCue').style.display='none';$('finalCue').textContent=''}
+function advanceFinal(i){
+ if(i===5){
+   $('finalQuestion').textContent='¡El delantero recibió la pelota!';$('finalMsg').textContent='⚽ Mira cómo avanza con varios toques cortos.';
+   setTimeout(()=>moveFinalBall('71%','54%',450),350);setTimeout(()=>moveFinalBall('77%','40%',450),900);setTimeout(()=>moveFinalBall('83%','51%',450),1450);setTimeout(()=>moveFinalBall('86%','47%',450),2000);
+   setTimeout(()=>{finalStep++;showFinalQuestion()},2550);return;
+ }
+ if(i===6){playGoalThenKeeperCatch();return}
+ if(i===10){simulateKeeperThrow();return}
+ if(i===14){simulateKeeperKick();return}
+ if(i===16){simulateCornerCause();return}
+ nextFinal();
+}
+function playGoalThenKeeperCatch(){
+ clearFinalTimers();
+ $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
+ $('finalOptions').innerHTML='';$('finalQuestion').textContent='¡TIRA A LA PORTERÍA!';$('finalMsg').textContent='🥅 El delantero le pega con el pie...';
+ moveFinalBall('95%','47%',700);
+ finalLater(()=>{
+   $('finalCelebration').style.display='block';
+   let nm=name();
+   let goalText=nm?'⚽ ¡GOOOOOOOL! 🏆  ¡'+nm.toUpperCase()+', MUY BIEN, EXCELENTE!':'⚽ ¡GOOOOOOOL! 🏆';
+   $('finalQuestion').textContent=goalText;
+   $('finalMsg').textContent=nm?'¡'+nm.toUpperCase()+', MUY BIEN, EXCELENTE!':'⚽ ¡GOOOOOOOL!';
+   finalLocked=true;
+   finalSpeak(nm?'¡Góóóóóóóóóóóól! ¡'+nm+', muy bien, excelente!':'¡Góóóóóóóóóóóól!',()=>{});
+ },800);
+ // FIN DEL PARTIDO FINAL: se detiene aquí después del primer gol.
+}
+function simulateKeeperThrow(){
+ clearFinalTimers();
+ $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
+ $('finalOptions').innerHTML='';$('finalQuestion').textContent='S4 · SAQUE CON LAS MANOS';$('finalMsg').textContent='🙌 PORTERO CONTRARIO: saque S4 con las manos hacia un espacio libre del campo.';
+ moveFinalBall('91%','47%',250);showFinalCue('🙌','94%','43%');
+ // Una sola animación de S4.
+ finalLater(()=>moveFinalBall('82%','72%',950),750);
+ // Pausa larga; después comienza UNA sola jugada nueva para preparar S5.
+ finalLater(()=>{hideFinalCue();$('finalQuestion').textContent='Ahora haremos otra jugada';$('finalMsg').textContent='⚽ El delantero atacará otra vez. Esta vez el tiro saldrá por un lado de la portería.';finalSpeak('Ahora haremos otra jugada. El delantero atacará otra vez. Esta vez el tiro saldrá por un lado de la portería.');},4700);
+ finalLater(()=>moveFinalBall('67%','42%',250),7000);
+ finalLater(()=>moveFinalBall('78%','55%',420),7500);
+ finalLater(()=>moveFinalBall('86%','43%',420),8000);
+ // V25.60: el balón continúa directamente desde el tiro hasta cruzar la línea de meta.
+ finalLater(()=>{moveFinalBall('98%','22%',650);$('finalQuestion').textContent='¡LA PELOTA SALIÓ POR LA LÍNEA DE META!';$('finalMsg').textContent='🥅 Observa: el tiro pasó por un lado de la portería.';},8500);
+ // Después de verse fuera, se coloca en el pie del portero para comenzar S5.
+ finalLater(()=>{moveFinalBall('91%','55%',250);$('finalQuestion').textContent='El portero contrario prepara el saque';$('finalMsg').textContent='👟 El balón queda en el pie del PORTERO CONTRARIO para el S5.';},12200);
+ finalLater(()=>{finalStep++;showFinalQuestion()},14000);
+}
+function simulateKeeperKick(){
+ clearFinalTimers();
+ $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
+ $('finalOptions').innerHTML='';$('finalQuestion').textContent='S5 · SAQUE CON EL PIE';$('finalMsg').textContent='👟 PORTERO CONTRARIO: saque S5 con el pie hacia el campo.';
+ moveFinalBall('91%','55%',250);showFinalCue('👟','95%','51%');
+ finalLater(()=>moveFinalBall('68%','60%',1000),750);
+ // V25.60: nueva jugada visual que provoca S2.
+ finalLater(()=>{hideFinalCue();$('finalQuestion').textContent='Ahora observa cómo se provoca el S2';$('finalMsg').textContent='⚽ El PORTERO CONTRARIO juega el balón hacia una banda lateral.';moveFinalBall('90%','50%',300);},4300);
+ finalLater(()=>moveFinalBall('78%','35%',450),4900);
+ finalLater(()=>moveFinalBall('64%','16%',450),5450);
+ finalLater(()=>{moveFinalBall('55%','-7%',650);$('finalQuestion').textContent='¡LA PELOTA SALIÓ POR LA LÍNEA LATERAL!';$('finalMsg').textContent='🙌 Ahora corresponde el saque de banda S2.';},6000);
+ finalLater(()=>{finalStep++;showFinalQuestion()},8200);
+}
+function simulateCornerCause(){
+ clearFinalTimers();hideFinalCue();
+ $('finalOpponentKeeper').style.display='block';$('finalKeeperEight').style.display='block';$('finalOpponentLabel').style.display='block';
+ $('finalOptions').innerHTML='';$('finalQuestion').textContent='Ahora observa cómo se provoca el S3';$('finalMsg').textContent='⚽ El delantero tira y el PORTERO CONTRARIO desvía el balón con las manos.';
+ moveFinalBall('67%','47%',300);
+ finalLater(()=>moveFinalBall('82%','47%',600),650);
+ finalLater(()=>{moveFinalBall('91%','43%',500);showFinalCue('🙌','93%','39%');},1350);
+ finalLater(()=>{hideFinalCue();moveFinalBall('98%','16%',750);$('finalQuestion').textContent='¡EL PORTERO LA DESVIÓ FUERA!';$('finalMsg').textContent='🚩 Salió por la línea de meta, fuera de la portería: corresponde S3.';},2050);
+ finalLater(()=>{finalStep++;showFinalQuestion()},4800);
+}
+function finalHistoryData(){try{return JSON.parse(localStorage.getItem('bairoaFinalScores')||'[]')}catch(_){return []}}
+function saveFinalScore(){let h=finalHistoryData();h.unshift({date:new Date().toLocaleDateString('es-PR'),stars:finalStars,fails:finalFails,total:finalQuestions.length});h=h.slice(0,20);localStorage.setItem('bairoaFinalScores',JSON.stringify(h))}
+function toggleFinalHistory(){let box=$('finalHistory');if(box.style.display==='block'){box.style.display='none';return}let h=finalHistoryData();box.innerHTML='<h3>📅 MIS RESULTADOS · META: 0 ❌</h3>'+(h.length?h.map(x=>'<div class="finalHistoryRow">'+x.date+' — '+x.stars+'/'+(x.total||18)+' 🌟 — '+x.fails+' ❌'+(x.fails===0?' 🏆':'')+'</div>').join(''):'<div class="finalHistoryRow">Todavía no hay partidos guardados.</div>');box.style.display='block'}
+function finishFinalGame(){hideFinalHots();saveFinalScore();$('finalOptions').innerHTML='<button class="finalOption" onclick="restartFinalCelebration()">🏆 CELEBRAR</button><button class="finalOption" onclick="toggleFinalHistory()">📅 MIS RESULTADOS</button>';$('finalQuestion').textContent=finalFails===0?'🏆 ¡PARTIDO PERFECTO! 0 ❌':'¡PARTIDO FINAL COMPLETADO!';$('finalMsg').textContent='🌟 ACIERTOS: '+finalStars+'/'+finalQuestions.length+'   |   ❌ FALLOS: '+finalFails+(finalFails===0?' — ¡META LOGRADA!':' — META: llegar a 0 ❌');finalSpeak(finalFails===0?'¡Excelente! Partido perfecto. Cero fallos.':'¡Excelente! Completaste el partido final. Sigue practicando para llegar a cero fallos.')}
+function restartFinalCelebration(){$('finalCelebration').style.display='block';finalSpeak('¡Excelente! ¡Muy bien!')}
+</script>
+
+
+<script id="v2553-ios-touch">
+(function(){
+  // Safari/iOS: mantiene los controles táctiles activos y evita que el teclado deje foco sobre el menú.
+  document.addEventListener('touchstart', function(){}, {passive:true});
+  document.addEventListener('click', function(e){
+    var b=e.target.closest && e.target.closest('button');
+    if(b && !b.disabled){ try{ b.blur(); }catch(_){} }
+  }, false);
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
+      console.log('Service Worker:', err);
+    });
+  });
+}
+</script>
+
+
+<script>
+try {
+  localStorage.removeItem('bairoaPlayerName');
+  localStorage.removeItem('bairoaPlayerNumber');
+} catch (e) {}
+</script>
+
+
+<style id="v2564-global-score-style">
+.globalScore{display:block;width:min(920px,94vw);margin:7px auto;padding:7px 12px;background:#fff1b8;border:3px solid #222;border-radius:12px;font-size:18px;font-weight:900;color:#10257e;text-align:center}
+@media(max-width:760px){.globalScore{font-size:14px;padding:6px 8px;border-width:2px}}
+</style>
+<script id="v2564-global-score">
+(function(){
+ let gStars=0,gCorrect=0,gFails=0;
+ function hudHTML(){return '⭐ ESTRELLAS: <span class="gStars">'+gStars+'</span> &nbsp; | &nbsp; ACIERTOS: <span class="gCorrect">'+gCorrect+'</span>/18 🌟 &nbsp; | &nbsp; FALLOS: <span class="gFails">'+gFails+'</span> ❌ &nbsp; | &nbsp; PREGUNTA: <span class="gQuestion">'+Math.min(gCorrect+1,18)+'</span>/18';}
+ function render(){document.querySelectorAll('.globalScore').forEach(x=>x.innerHTML=hudHTML())}
+ function addCorrect(stars){gCorrect++;gStars+=(stars||1);render()}
+ function addFail(){gFails++;render()}
+ function installHUD(){
+   ['menuScreen','passesScreen','kicksScreen','movesScreen','finalScreen'].forEach(id=>{let host=document.getElementById(id);if(host&&!host.querySelector('.globalScore')){let d=document.createElement('div');d.className='globalScore';host.insertBefore(d,host.firstChild)}});
+   let a4=document.getElementById('activity4');if(a4&&!a4.querySelector('.globalScore')){let d=document.createElement('div');d.className='globalScore';a4.insertBefore(d,a4.firstChild)}
+   document.querySelectorAll('#passesScreen .panel.score,#kicksScreen .panel.score,#movesScreen .panel.score,#finalScore').forEach(x=>x.style.display='none');render();
+ }
+ function wrap(name,fn){let old=window[name];if(typeof old==='function')window[name]=function(){return fn.call(this,old,arguments)}}
+ window.addEventListener('load',function(){
+   installHUD();
+   wrap('pickPass',function(old,a){let ok=pplaying&&!pwaiting&&!plocked&&a[0]===pseq[pstep][0];let bad=pplaying&&!pwaiting&&!plocked&&!ok;let r=old.apply(this,a);if(ok)addCorrect(1);else if(bad)addFail();return r});
+   wrap('scoreGoal',function(old,a){let ok=pwaiting&&!plocked;let r=old.apply(this,a);if(ok)addCorrect(3);return r});
+   wrap('choosePlace',function(old,a){let active=sphase==='place'&&!slocked;let ok=active&&a[0]===kicks[si].place;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('chooseMethod',function(old,a){let active=sphase==='method'&&!slocked;let ok=active&&a[0]===kicks[si].method;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('practiceMove',function(old,a){let active=currentPos&&!mLocked;let ok=active&&moveData[currentPos].allowed.includes(a[0]);let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('answerKick',function(old,a){let active=!!currentKick;let ok=active&&(currentKick===1||a[0]===kickLessons[currentKick].correct);let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   wrap('finalAnswer',function(old,a){let active=finalStep>=0&&!finalLocked;let z=active?finalQuestions[finalStep]:null;let ok=active&&a[0]===z.ans;let r=old.apply(this,a);if(active){if(ok)addCorrect(1);else addFail()}return r});
+   // Reiniciar una sección NO borra el marcador general; se conserva hasta cerrar/recargar la sesión.
+ });
+})();
+</script>
+
+<!-- V25.68 - restaura S1-S5 en práctica + crédito familiar corregido + sistema de actualización -->
+
+<style id="v2567-family-credit-style">
+  body{padding-bottom:42px !important;}
+  #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
+  @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
+</style>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.78</span></div>
+<script src="actualizador.js"></script>
+
+<!-- V25.78 - Voz iPhone en secuencia, callback único -->
+<style id="v2570-welcome-style">
+#v2570Welcome{
+ position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
+ display:flex;align-items:center;justify-content:center;padding:18px;
+ font-family:Arial,sans-serif;
+}
+#v2570WelcomeBox{
+ width:min(680px,94vw);background:#f7fcff;border:4px solid #153c8c;
+ border-radius:22px;padding:22px 24px;text-align:center;
+ box-shadow:0 10px 35px rgba(0,0,0,.38);color:#10257e;
+}
+#v2570WelcomeBox h2{margin:0 0 14px;font-size:clamp(24px,5vw,34px);color:#0d318c}
+#v2570WelcomeBox p{font-size:clamp(17px,3.4vw,22px);line-height:1.42;margin:10px 0;color:#17233c;font-weight:700}
+#v2570WelcomeBox .important{color:#b12620}
+#v2570Start{
+ margin-top:14px;padding:13px 24px;border:3px solid #17345c;border-radius:14px;
+ background:#50d765;color:#071a0c;font-size:clamp(18px,3.8vw,24px);
+ font-weight:900;cursor:pointer;box-shadow:0 4px 0 #27442d;
+}
+@media(max-width:600px){
+ #v2570WelcomeBox{padding:17px 14px;border-width:3px}
+ #v2570WelcomeBox p{margin:8px 0}
+}
+</style>
+<style id="v2571-style">
+#v2571Overlay{position:fixed;inset:0;z-index:210000;background:rgba(8,30,50,.78);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Arial,sans-serif}
+#v2571Box{width:min(700px,95vw);background:#f7fcff;border:4px solid #153c8c;border-radius:22px;padding:22px;text-align:center;box-shadow:0 10px 35px #0006;color:#17233c}
+#v2571Box h2{margin:0 0 12px;color:#0d318c;font-size:clamp(24px,5vw,34px)}
+#v2571Box p{font-size:clamp(17px,3.3vw,21px);font-weight:700;line-height:1.4;margin:9px 0}
+#v2571Prompt{color:#10257e;font-size:clamp(20px,4vw,27px)!important}
+#v2571Input{width:min(460px,88%);font-size:26px;font-weight:900;text-align:center;padding:12px;border:3px solid #17345c;border-radius:12px;text-transform:uppercase;margin:8px}
+.v2571Btn{margin:9px 7px;padding:13px 20px;border:3px solid #17345c;border-radius:14px;font-size:clamp(18px,3.6vw,23px);font-weight:900;cursor:pointer}
+.v2571Yes{background:#50d765}.v2571No{background:#ffcc5c}.v2571Next{background:#8fd7ff}
+#v2571Saved{font-size:clamp(18px,3.5vw,23px);line-height:1.55;background:#eef7ff;border-radius:14px;padding:10px;margin:12px 0}
+</style>
+<style>
+/* V25.72 - bloque Entrenador proporcional, sin ancho fijo */
+.clubBrand{width:max-content!important;max-width:92vw!important;padding:6px 10px!important;}
+.clubBrand .coach{white-space:normal!important;}
+</style>
+<div id="v2571Overlay"><div id="v2571Box"><h2>⚽ ¡BIENVENIDO A TU JUEGO DE FÚTBOL! ⚽</h2><div id="v2571Content"></div></div></div>
+<script id="v2571-script">
+(function(){
+ const K='juegoFutbolDatosV2571'; let data={club:'',name:'',number:''}; const $=id=>document.getElementById(id);
+ let v2578SpeechToken=0;
+ function speak(text,done){
+  if(!('speechSynthesis' in window)){if(done)done();return}
+  const token=++v2578SpeechToken;
+  try{speechSynthesis.cancel()}catch(e){}
+  const parts=String(text||'').match(/[^.!?¡¿]+[.!?]+|[^.!?¡¿]+$/g)||[String(text||'')];
+  let i=0,finished=false;
+  const finishOnce=()=>{if(finished||token!==v2578SpeechToken)return;finished=true;if(done)done()};
+  const next=()=>{
+   if(token!==v2578SpeechToken)return;
+   if(i>=parts.length){finishOnce();return}
+   const u=new SpeechSynthesisUtterance(parts[i++].trim());
+   u.lang='es-US';u.rate=.78;u.pitch=1.08;
+   const vs=speechSynthesis.getVoices();
+   u.voice=vs.find(v=>/paulina|monica|mónica|sofia|sofía|luciana|helena|sabina|female|mujer/i.test(v.name)&&/^es/i.test(v.lang))||vs.find(v=>/^es-(US|MX|PR)/i.test(v.lang))||vs.find(v=>/^es/i.test(v.lang))||null;
+   let advanced=false;
+   const advance=()=>{if(advanced||token!==v2578SpeechToken)return;advanced=true;setTimeout(next,120)};
+   u.onend=advance;u.onerror=advance;
+   speechSynthesis.speak(u);
+  };
+  setTimeout(next,80);
+ }
+ function saved(){try{return JSON.parse(localStorage.getItem(K)||'null')}catch(e){return null}}
+ function save(){try{localStorage.setItem(K,JSON.stringify(data))}catch(e){}}
+ function esc(x){return String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ function updateGame(){document.querySelectorAll('.dynamicClubName').forEach(e=>e.textContent=data.club||'TU CLUB');const n=$('playerName'),q=$('playerNumber');if(n){n.value=data.name;n.dispatchEvent(new Event('input',{bubbles:true}))}if(q){q.value=data.number;q.dispatchEvent(new Event('input',{bubbles:true}))}}
+ function finish(){
+ document.querySelectorAll('#v2570Welcome,#welcomeOverlay,#welcomeModal,#welcomeScreen,.welcome-overlay.v2570,.welcome-modal.v2570').forEach(function(e){e.remove();});
+ document.querySelectorAll('button').forEach(function(b){if(/ESCUCHAR Y COMENZAR/i.test(b.textContent||'')){var x=b.closest('[id*="welcome" i],[class*="welcome" i]');if(x)x.remove();}});
+ save();updateGame();speak('¡Excelente, '+data.name+'! Tu club es '+data.club+' y tu número es '+data.number+'. ¡Comencemos!',()=>{const o=$('v2571Overlay');if(o)o.remove()})}
+ function ask(field){const prompts={club:'Escribe el nombre que quieres ponerle a tu club.',name:'Ahora escribe tu nombre.',number:'Ahora escribe tu número en el equipo.'};$('v2571Content').innerHTML='<p id="v2571Prompt">'+prompts[field]+'</p><input id="v2571Input" '+(field==='number'?'inputmode="numeric" pattern="[0-9]*"':'')+' autocomplete="off"><br><button class="v2571Btn v2571Next" id="v2571Next">🔊 CONFIRMAR</button>';const inp=$('v2571Input');inp.focus();inp.addEventListener('input',()=>{inp.value=field==='number'?inp.value.replace(/\D/g,''):inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 \-]/g,'')});$('v2571Next').onclick=()=>{const v=inp.value.trim();if(!v){speak(prompts[field]);return}confirmField(field,v)};speak(prompts[field])}
+ function confirmField(field,v){const q={club:'Escribiste '+v+' como nombre de tu club. ¿Está correcto?',name:'Tu nombre es '+v+'. ¿Está correcto?',number:'Tu número en el equipo es '+v+'. ¿Está correcto?'}[field];const t=q+' Presiona el botón verde que dice Sí si está correcto. Presiona el botón amarillo que dice No si quieres cambiarlo.';$('v2571Content').innerHTML='<p id="v2571Prompt">'+esc(q)+'</p><button class="v2571Btn v2571Yes" id="v2571Yes">✅ SÍ</button><button class="v2571Btn v2571No" id="v2571No">❌ NO</button>';speak(t);$('v2571Yes').onclick=()=>{data[field]=v;if(field==='club')ask('name');else if(field==='name')ask('number');else finish()};$('v2571No').onclick=()=>speak('Está bien. Escríbelo nuevamente.',()=>ask(field))}
+ function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak(t,()=>{$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}})}}else{$('v2571Content').innerHTML='<p><b>Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</b></p><p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p><p><b>🏆 ¡COMENCEMOS!</b></p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',()=>ask('club'))}}}
+ window.addEventListener('load',begin,{once:true});
+})();
+</script>
+
+</body></html>
+<style>
+/* V25.52 - Responsive: PC + iPhone + Android */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0;overflow-x:hidden;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom);touch-action:manipulation}
+button,input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{min-height:44px}
+.campo,.miniField,.field,.soccerField,#field,#moveField,.kickField,#finalField{max-width:94vw;height:auto}
+img{max-width:100%}
+.controls{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}
+.controls button{margin:2px;min-height:46px}
+#answers,#finalOptions{padding-left:4px;padding-right:4px}
+.answer,.finalOption{min-height:46px}
+
+@media(max-width:760px){
+ h1{font-size:clamp(23px,7vw,31px);-webkit-text-stroke:1.4px #111;margin:5px 2px}
+ .panel{width:96vw;padding:7px;margin:5px auto}
+ .namebox{font-size:16px;gap:8px}
+ #playerName{width:min(230px,62vw);max-width:none;font-size:16px;padding:7px 8px}
+ #playerNumber{font-size:16px;padding:7px 5px;width:70px}
+ .menu{width:94vw;gap:10px;margin:10px auto}
+ .menuBtn{font-size:19px;padding:14px 10px;border-width:4px;border-radius:16px}
+ .small{font-size:13px}
+ .score{font-size:16px;border-width:3px;padding:6px 10px}
+ .inst{font-size:17px;padding:7px}
+ .msg{font-size:15px;padding:6px}
+ .campo{width:96vw;border-width:4px}
+ .controls{margin:7px 2px}
+ .controls button{font-size:14px;padding:8px 10px;border-width:3px;border-radius:11px}
+ .answer{font-size:16px;padding:9px 15px;border-width:3px}
+ #goal,#celebrate{font-size:clamp(29px,9vw,45px)}
+ #pBall,#sBall{font-size:30px}
+ #shoot{width:62px;height:54px;font-size:13px}
+ .moveMenu{width:95vw;gap:7px;margin:7px auto}
+ .moveMenu button{font-size:15px;padding:10px 6px;border-width:3px}
+ #movePrompt{width:96vw}
+ .dir{font-size:14px;padding:9px 10px;border-width:3px}
+ #ruleCard{width:92%;font-size:12px;padding:5px}
+ .kickTabs{display:flex!important;overflow-x:auto;justify-content:flex-start!important;gap:6px!important;padding:5px 4px!important;scrollbar-width:thin}
+ .kickTabs button{flex:0 0 auto!important;min-width:100px!important;font-size:13px!important;padding:8px 7px!important}
+ .clubBrand{position:relative!important;left:auto!important;top:auto!important;width:max-content;max-width:92vw;margin:4px auto;padding:3px 7px}
+ .clubBrand img{width:38px;height:38px}
+ .clubBrand .coach{font-size:12px}
+ .playerIdentity{position:relative!important;top:auto!important;left:auto!important;right:auto!important;width:max-content;max-width:92vw;margin:4px auto;font-size:12px}
+ #menuScreen::before,#menuScreen::after{width:90px!important;top:240px!important;opacity:.17!important}
+ #menuScreen::before{left:3px!important} #menuScreen::after{right:3px!important}
+ #finalScreen{padding:5px 2px}
+ #finalScreen .finalWrap{width:100%;max-width:100%}
+ #finalScore{font-size:14px;padding:6px 9px;border-width:2px}
+ #finalQuestion{font-size:16px;padding:8px 6px;margin:6px 2px}
+ #finalMsg{font-size:14px;min-height:22px;margin:5px 2px}
+ #finalField{width:96vw;border-width:4px;margin:5px auto}
+ #finalBall{font-size:26px}
+ #finalCue{font-size:34px}
+ #finalOptions{gap:6px;margin:7px auto;width:96vw}
+ .finalOption{font-size:14px;padding:8px 10px;border-width:3px;flex:0 1 auto}
+ #finalCelebration{font-size:clamp(27px,9vw,40px)}
+ #finalOpponentLabel{font-size:9px;padding:1px 4px}
+ #finalKeeperEight{font-size:11px;width:19px;height:19px;line-height:15px}
+}
+
+@media(max-width:430px) and (orientation:portrait){
+ .campo,.miniField,.field,.soccerField,#field,#moveField,.kickField,#finalField{width:98vw!important}
+ .controls button{font-size:12px;padding:7px 8px;min-height:44px}
+ .finalOption{font-size:12px;padding:7px 8px}
+ .menuBtn{font-size:17px}
+ #menuScreen::before,#menuScreen::after{display:none}
+}
+
+@media(max-height:520px) and (orientation:landscape){
+ h1{font-size:23px;margin:2px}
+ .panel{margin:3px auto;padding:5px}
+ .campo,#finalField{width:min(78vw,760px)!important;margin:3px auto}
+ #finalQuestion{margin:3px auto;padding:5px;font-size:15px}
+ #finalMsg{margin:2px;font-size:13px;min-height:18px}
+ #finalOptions{margin:4px auto}
+ .controls{margin:4px}
+ .controls button{padding:6px 9px;min-height:40px}
+}
+</style>
+
+<style id="v2554-activity4-field-fix">
+/* V25.54 - Safari/iPhone: conserva altura real de la cancha en Seccion 4.
+   La regla responsive general height:auto colapsaba este DIV (no es una IMG). */
+#activity4 .miniField{
+  width:min(92vw,760px) !important;
+  height:auto !important;
+  aspect-ratio:760 / 330 !important;
+  min-height:0 !important;
+  display:block !important;
+  background-image:url("campo_lecciones_limpio.png") !important;
+  background-size:100% 100% !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
+@supports not (aspect-ratio: 1 / 1){
+  #activity4 .miniField{height:330px !important;}
+}
+@media(max-width:760px){
+  #activity4 .miniField{width:min(94vw,760px) !important;}
+}
+@media(max-width:430px) and (orientation:portrait){
+  #activity4 .miniField{width:94vw !important;}
+}
+</style>
+
+<style id="v2555-activity4-horizontal-fit">
+/* V25.55 - iPhone/Safari: la cancha completa de Seccion 4 debe caber dentro
+   del panel. Todos los indicadores internos conservan sus porcentajes y se
+   escalan junto con la cancha. */
+#activity4,
+#activity4 .kickLesson{
+  box-sizing:border-box !important;
+  max-width:100% !important;
+}
+#activity4 .kickLesson{
+  width:min(900px, 100%) !important;
+  overflow:hidden !important;
+}
+#activity4 .miniField{
+  box-sizing:border-box !important;
+  width:min(760px, 100%) !important;
+  max-width:100% !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+@media(max-width:760px){
+  #activity4{padding-left:6px !important;padding-right:6px !important;}
+  #activity4 .kickLesson{width:100% !important;padding-left:6px !important;padding-right:6px !important;}
+  #activity4 .miniField{width:100% !important;max-width:100% !important;}
+}
+@media(max-width:430px) and (orientation:portrait){
+  #activity4 .miniField{width:100% !important;max-width:100% !important;}
+}
+</style>
