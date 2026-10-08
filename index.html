@@ -28,19 +28,23 @@ h1{margin:8px;color:#ffd719;-webkit-text-stroke:2px #111;font-size:34px}
 #menuScreen::before,#menuScreen::after{
   content:"";
   position:absolute;
-  top:255px;
-  width:min(250px,18vw);
+  top:225px;
+  width:min(380px,26vw);
   aspect-ratio:1/1;
-  background:url("bairoa_logo.jpg") center/contain no-repeat;
-  opacity:.30;
+  background:url("mi_futbol_club_logo.png") center/contain no-repeat;
+  opacity:.88;
+  filter:drop-shadow(0 0 12px rgba(255,255,255,.35)) saturate(1.12) contrast(1.05);
   z-index:-1;
   pointer-events:none;
 }
-#menuScreen::before{left:18px}
-#menuScreen::after{right:18px}
+#menuScreen::before{left:10px}
+#menuScreen::after{right:10px}
 #menuScreen .panel,#menuScreen .menu{position:relative;z-index:1}
 @media(max-width:1050px){
- #menuScreen::before,#menuScreen::after{width:145px;opacity:.22}
+ #menuScreen::before,#menuScreen::after{top:245px;width:220px;opacity:.62}
+}
+@media(max-width:760px){
+ #menuScreen::before,#menuScreen::after{display:none}
 }
 .panel{width:min(920px,94vw);margin:7px auto;padding:9px;border-radius:14px;font-weight:bold}
 .namebox{background:#fff;border:3px solid #3cb5e9;font-size:19px}
@@ -163,7 +167,7 @@ h1{margin:8px;color:#ffd719;-webkit-text-stroke:2px #111;font-size:34px}
 .centerCircle{position:absolute;left:50%;top:50%;width:115px;height:115px;border:4px solid white;
  border-radius:50%;transform:translate(-50%,-50%)}
 .kickPlayer,.kickBall,.kickTarget{position:absolute;transition:all 1.2s ease;transform:translate(-50%,-50%)}
-.kickPlayer{font-size:62px;left:43%;top:50%}.kickBall{font-size:38px;left:50%;top:50%}
+.kickPlayer{font-size:62px;left:43%;top:50%}.kickBall{left:50%;top:50%;width:42px;height:42px;background:url("balon_seccion4.png") center/contain no-repeat;color:transparent;font-size:0}
 .kickTarget{font-size:38px;left:68%;top:50%}
 .kickSteps{max-width:760px;margin:10px auto;text-align:left;background:#fff;border-radius:14px;padding:12px;
  border:2px solid #333;font-size:17px;font-weight:700}
@@ -243,7 +247,7 @@ h1{margin:8px;color:#ffd719;-webkit-text-stroke:2px #111;font-size:34px}
  position:absolute;z-index:10;line-height:1;transform:translate(-50%,-50%);
  pointer-events:none;
 }
-.s2ExampleBall{font-size:38px}
+.s2ExampleBall{width:40px;height:40px;background:url("balon_seccion4.png") center/contain no-repeat;color:transparent;font-size:0}
 .s2ExampleHands{font-size:38px}
 
 .playerIdentity{
@@ -282,6 +286,45 @@ h1{margin:8px;color:#ffd719;-webkit-text-stroke:2px #111;font-size:34px}
 .kickTabs button::first-line{
  font-size:18px;
 }
+
+.kickTabs button.kickDisabled,
+.kickTabs button:disabled{
+  background:#d8d8d8!important;
+  color:#777!important;
+  border-color:#888!important;
+  box-shadow:none!important;
+  cursor:not-allowed!important;
+  opacity:.72!important;
+  transform:none!important;
+  animation:none!important;
+}
+.kickTabs button.kickDisabled span{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  font-weight:900;
+  color:#a33;
+}
+
+
+#s1IntegratedHost{
+  margin-bottom:2px!important;
+}
+#activity4 > .backBtn{
+  display:block;
+  width:max-content;
+  margin:2px auto 12px!important;
+}
+
+
+#s1IntegratedHost{
+  margin-top:10px!important;
+  margin-bottom:0!important;
+}
+#activity4 > .backBtn{
+  margin:4px auto 10px!important;
+}
+
 </style>
 <style>
 /* V25.1 - identificación al doble de tamaño */
@@ -803,6 +846,24 @@ input{user-select:text;-webkit-user-select:text}
 })();
 </script>
 
+
+<style id="v2584-s1-integrado">
+#s1IntegratedHost{
+  display:none;
+  width:min(96vw,980px);
+  margin:12px auto 18px;
+}
+#s1IntegratedFrame{
+  display:block;
+  width:100%;
+  height:650px;
+  border:0;
+  margin:0;
+  background:transparent;
+  overflow:hidden;
+}
+</style>
+
 </head>
 <body>
 
@@ -977,6 +1038,7 @@ function setPlayer(pos){
  $("soloName").textContent=name()||"JUGADOR";
  let sprite={PORTERO:"portero.png",DEFENSA:"defensa.png",MEDIOCAMPISTA:"mediocampista.png",DELANTERO:"delantero.png"}[pos];
  $("playerSprite").src=sprite;
+ $("playerSprite").style.transform = (pos==="DEFENSA") ? "translateX(-50%) scaleX(-1)" : "translateX(-50%)";
  p.style.left=d.start[0];p.style.top=d.start[1];p.style.display="block";
  z.style.left=d.zone[0];z.style.top=d.zone[1];z.style.width=d.zone[2];z.style.height=d.zone[3];z.style.display="block";
 }
@@ -1029,17 +1091,20 @@ function selectBairoaVoice(){
   const vs=window.speechSynthesis ? speechSynthesis.getVoices() : [];
   if(!vs.length) return null;
   const spanish=vs.filter(v=>/^es([-_]|$)/i.test(v.lang||""));
+  const latin=spanish.filter(v=>/^es[-_](US|MX|PR|419|AR|CO|CL|PE|VE|UY|EC|GT|CR|PA|DO|BO|PY|SV|HN|NI)/i.test(v.lang||""));
+  const pool=latin.length ? latin : spanish.filter(v=>!/^es[-_]ES/i.test(v.lang||""));
+  const preferred=pool.length ? pool : spanish;
   const femaleNames=[
     "Sabina","Helena","Elvira","Dalia","Paulina","Mónica","Monica",
     "Sofía","Sofia","Soledad","Luciana","Paloma","Conchita","Laura",
     "Google español de Estados Unidos","Google español"
   ];
   for(const n of femaleNames){
-    const v=spanish.find(x=>(x.name||"").toLowerCase().includes(n.toLowerCase()));
+    const v=preferred.find(x=>(x.name||"").toLowerCase().includes(n.toLowerCase()));
     if(v){ bairoaVoice=v; return v; }
   }
-  const female=spanish.find(v=>/(female|mujer|woman|sabina|helena|elvira|dalia|paulina|m[oó]nica|sof[ií]a|soledad|luciana|paloma|conchita|laura)/i.test(v.name||""));
-  bairoaVoice=female || spanish[0] || vs[0];
+  const female=preferred.find(v=>/(female|mujer|woman|sabina|helena|elvira|dalia|paulina|m[oó]nica|sof[ií]a|soledad|luciana|paloma|conchita|laura)/i.test(v.name||""));
+  bairoaVoice=female || preferred[0] || spanish[0] || vs[0];
   return bairoaVoice;
 }
 if(window.speechSynthesis){
@@ -1095,11 +1160,12 @@ document.addEventListener("click",()=>setTimeout(refreshClubBrand,35));
   <p class="a4intro">Escoge un saque. Primero mira la demostración y luego practica.</p>
   <div class="kickTabs">
     <button onclick="openKickLesson(1)">S1<br><small>INICIAL</small></button>
-    <button onclick="openKickLesson(2)">S2<br><small>BANDA</small></button>
-    <button onclick="openKickLesson(3)">S3<br><small>ESQUINA</small></button>
-    <button onclick="openKickLesson(4)">S4<br><small>S4 META · MANOS</small></button>
-    <button onclick="openKickLesson(5)">S5<br><small>S5 META · PIE</small></button>
+    <button class="kickDisabled" disabled aria-disabled="true">S2<br><small>BANDA</small><br><span>PRÓXIMAMENTE</span></button>
+    <button class="kickDisabled" disabled aria-disabled="true">S3<br><small>ESQUINA</small><br><span>PRÓXIMAMENTE</span></button>
+    <button class="kickDisabled" disabled aria-disabled="true">S4<br><small>META · MANOS</small><br><span>PRÓXIMAMENTE</span></button>
+    <button class="kickDisabled" disabled aria-disabled="true">S5<br><small>META · PIE</small><br><span>PRÓXIMAMENTE</span></button>
   </div>
+  <div id="s1IntegratedHost"><iframe id="s1IntegratedFrame" title="S1 Saque Inicial" scrolling="no"></iframe></div>
   <div id="kickLesson" class="kickLesson">
     <h3 id="kickTitle">S1 – SAQUE INICIAL</h3>
     <div class="miniField">
@@ -1845,10 +1911,10 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.73</span></div>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.84</span></div>
 <script src="actualizador.js"></script>
 
-<!-- V25.73 - Mensaje educativo permanente al iniciar -->
+<!-- V25.84 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -1873,57 +1939,6 @@ try {
  #v2570WelcomeBox p{margin:8px 0}
 }
 </style>
-<div id="v2570Welcome" role="dialog" aria-modal="true" aria-labelledby="v2570WelcomeTitle">
- <div id="v2570WelcomeBox">
-  <h2 id="v2570WelcomeTitle">⚽ ¡BIENVENIDO A <span class="dynamicClubName">TU CLUB</span>! ⚽</h2>
-  <p class="important">Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</p>
-  <p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p>
-  <p>🏆 <strong>¡COMENCEMOS!</strong></p>
-  <p>Escribe tu <strong>nombre</strong> y tu <strong>número de jugador</strong> para empezar.</p>
-  <button id="v2570Start" type="button">🔊 ESCUCHAR Y COMENZAR</button>
- </div>
-</div>
-<script id="v2570-welcome-script">
-(function(){
- const spoken="¡Bienvenido a <span class="dynamicClubName">TU CLUB</span>! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos! Escribe tu nombre y tu número de jugador para empezar.";
- function finishWelcome(){
-   const w=document.getElementById('v2570Welcome');
-   if(w) w.remove();
-   const n=document.getElementById('playerName');
-   if(n) setTimeout(()=>n.focus(),100);
- }
- function listenAndStart(){
-   const b=document.getElementById('v2570Start');
-   if(b){b.disabled=true;b.textContent='🔊 ESCUCHANDO...';}
-   if(!('speechSynthesis' in window)){ finishWelcome(); return; }
-   try{
-     speechSynthesis.cancel();
-     const u=new SpeechSynthesisUtterance(spoken);
-     u.lang='es-US';
-     u.rate=.78;
-     u.pitch=1.08;
-     const chooseVoice=function(){
-       const voices=speechSynthesis.getVoices();
-       return voices.find(v=>/paulina|monica|mónica|sofia|sofía|luciana|helena|sabina|female|mujer/i.test(v.name) && /^es/i.test(v.lang))
-         || voices.find(v=>/^es-(US|MX|PR)/i.test(v.lang))
-         || voices.find(v=>/^es/i.test(v.lang));
-     };
-     const v=chooseVoice(); if(v) u.voice=v;
-     u.onend=finishWelcome;
-     u.onerror=function(){ if(b){b.disabled=false;b.textContent='🔊 ESCUCHAR Y COMENZAR';} };
-     speechSynthesis.speak(u);
-   }catch(e){
-     if(b){b.disabled=false;b.textContent='🔊 ESCUCHAR Y COMENZAR';}
-   }
- }
- window.addEventListener('load',function(){
-   const b=document.getElementById('v2570Start');
-   if(b) b.addEventListener('click',listenAndStart);
- },{once:true});
-})();
-</script>
-
-
 <style id="v2571-style">
 #v2571Overlay{position:fixed;inset:0;z-index:210000;background:rgba(8,30,50,.78);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Arial,sans-serif}
 #v2571Box{width:min(700px,95vw);background:#f7fcff;border:4px solid #153c8c;border-radius:22px;padding:22px;text-align:center;box-shadow:0 10px 35px #0006;color:#17233c}
@@ -1944,7 +1959,29 @@ try {
 <script id="v2571-script">
 (function(){
  const K='juegoFutbolDatosV2571'; let data={club:'',name:'',number:''}; const $=id=>document.getElementById(id);
- function speak(text,done){if(!('speechSynthesis'in window)){if(done)done();return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='es-US';u.rate=.78;u.pitch=1.08;const vs=speechSynthesis.getVoices();u.voice=vs.find(v=>/paulina|monica|mónica|sofia|sofía|luciana|helena|sabina|female|mujer/i.test(v.name)&&/^es/i.test(v.lang))||vs.find(v=>/^es-(US|MX|PR)/i.test(v.lang))||vs.find(v=>/^es/i.test(v.lang))||null;if(done){u.onend=done;u.onerror=done}speechSynthesis.speak(u)}catch(e){if(done)done()}}
+ let v2578SpeechToken=0;
+ function speak(text,done){
+  if(!('speechSynthesis' in window)){if(done)done();return}
+  const token=++v2578SpeechToken;
+  try{speechSynthesis.cancel()}catch(e){}
+  const parts=String(text||'').match(/[^.!?¡¿]+[.!?]+|[^.!?¡¿]+$/g)||[String(text||'')];
+  let i=0,finished=false;
+  const finishOnce=()=>{if(finished||token!==v2578SpeechToken)return;finished=true;if(done)done()};
+  const next=()=>{
+   if(token!==v2578SpeechToken)return;
+   if(i>=parts.length){finishOnce();return}
+   const u=new SpeechSynthesisUtterance(parts[i++].trim());
+   u.voice=bairoaVoice || selectBairoaVoice();
+   u.lang=(u.voice&&u.voice.lang)||'es-US';
+   const isiPhoneIPad=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+   u.rate=isiPhoneIPad?.40:.78;u.pitch=1.08;
+   let advanced=false;
+   const advance=()=>{if(advanced||token!==v2578SpeechToken)return;advanced=true;setTimeout(next,120)};
+   u.onend=advance;u.onerror=advance;
+   speechSynthesis.speak(u);
+  };
+  setTimeout(next,80);
+ }
  function saved(){try{return JSON.parse(localStorage.getItem(K)||'null')}catch(e){return null}}
  function save(){try{localStorage.setItem(K,JSON.stringify(data))}catch(e){}}
  function esc(x){return String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -1954,9 +1991,72 @@ try {
  document.querySelectorAll('button').forEach(function(b){if(/ESCUCHAR Y COMENZAR/i.test(b.textContent||'')){var x=b.closest('[id*="welcome" i],[class*="welcome" i]');if(x)x.remove();}});
  save();updateGame();speak('¡Excelente, '+data.name+'! Tu club es '+data.club+' y tu número es '+data.number+'. ¡Comencemos!',()=>{const o=$('v2571Overlay');if(o)o.remove()})}
  function ask(field){const prompts={club:'Escribe el nombre que quieres ponerle a tu club.',name:'Ahora escribe tu nombre.',number:'Ahora escribe tu número en el equipo.'};$('v2571Content').innerHTML='<p id="v2571Prompt">'+prompts[field]+'</p><input id="v2571Input" '+(field==='number'?'inputmode="numeric" pattern="[0-9]*"':'')+' autocomplete="off"><br><button class="v2571Btn v2571Next" id="v2571Next">🔊 CONFIRMAR</button>';const inp=$('v2571Input');inp.focus();inp.addEventListener('input',()=>{inp.value=field==='number'?inp.value.replace(/\D/g,''):inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 \-]/g,'')});$('v2571Next').onclick=()=>{const v=inp.value.trim();if(!v){speak(prompts[field]);return}confirmField(field,v)};speak(prompts[field])}
- function confirmField(field,v){const t={club:'Escribiste '+v+' como nombre de tu club. ¿Está correcto?',name:'Tu nombre es '+v+'. ¿Está correcto?',number:'Tu número en el equipo es '+v+'. ¿Está correcto?'}[field];$('v2571Content').innerHTML='<p id="v2571Prompt">'+esc(t)+'</p><button class="v2571Btn v2571Yes" id="v2571Yes">✅ SÍ</button><button class="v2571Btn v2571No" id="v2571No">❌ NO</button>';speak(t);$('v2571Yes').onclick=()=>{data[field]=v;if(field==='club')ask('name');else if(field==='name')ask('number');else finish()};$('v2571No').onclick=()=>speak('Está bien. Escríbelo nuevamente.',()=>ask(field))}
- function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak(t,()=>{$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}})}}else{$('v2571Content').innerHTML='<p>Este juego <b>no sustituye las instrucciones ni las enseñanzas de tu entrenador</b>.</p><p>Te ayudará a practicar y memorizar lo que te enseñan.</p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',()=>ask('club'))}}}
+ function confirmField(field,v){const q={club:'Escribiste '+v+' como nombre de tu club. ¿Está correcto?',name:'Tu nombre es '+v+'. ¿Está correcto?',number:'Tu número en el equipo es '+v+'. ¿Está correcto?'}[field];const t=q+' Presiona el botón verde que dice Sí si está correcto. Presiona el botón amarillo que dice No si quieres cambiarlo.';$('v2571Content').innerHTML='<p id="v2571Prompt">'+esc(q)+'</p><button class="v2571Btn v2571Yes" id="v2571Yes">✅ SÍ</button><button class="v2571Btn v2571No" id="v2571No">❌ NO</button>';speak(t);$('v2571Yes').onclick=()=>{data[field]=v;if(field==='club')ask('name');else if(field==='name')ask('number');else finish()};$('v2571No').onclick=()=>speak('Está bien. Escríbelo nuevamente.',()=>ask(field))}
+ function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak(t,()=>{$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}})}}else{$('v2571Content').innerHTML='<p><b>Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</b></p><p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p><p><b>🏆 ¡COMENCEMOS!</b></p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',()=>ask('club'))}}}
  window.addEventListener('load',begin,{once:true});
+})();
+</script>
+
+
+<script id="v2584-s1-integration">
+(function(){
+  const originalOpenKickLesson = window.openKickLesson;
+
+  function selectMainTab(n){
+    document.querySelectorAll("#activity4 .kickTabs button").forEach((btn,i)=>{
+      btn.classList.toggle("kickSelected", i===n-1);
+      btn.setAttribute("aria-pressed", i===n-1 ? "true" : "false");
+    });
+  }
+
+  function showApprovedS1(){
+    document.body.classList.remove("kick-s4","kick-s5");
+    selectMainTab(1);
+
+    const host = document.getElementById("s1IntegratedHost");
+    const oldLesson = document.getElementById("kickLesson");
+    const frame = document.getElementById("s1IntegratedFrame");
+    if(!host || !oldLesson || !frame) return;
+
+    oldLesson.style.display = "none";
+    host.style.display = "block";
+
+    if(!frame.getAttribute("src")){
+      frame.setAttribute("src","s1_aprobado_v23.html?embed=1");
+    }
+  }
+
+  window.openKickLesson = function(n){
+    if(Number(n) >= 2 && Number(n) <= 5){
+      n = 1;
+    }
+    if(Number(n)===1){
+      showApprovedS1();
+      return;
+    }
+    const host = document.getElementById("s1IntegratedHost");
+    const oldLesson = document.getElementById("kickLesson");
+    if(host) host.style.display = "none";
+    if(oldLesson) oldLesson.style.display = "";
+    if(typeof originalOpenKickLesson === "function"){
+      return originalOpenKickLesson.apply(this, arguments);
+    }
+  };
+
+  window.addEventListener("message", function(ev){
+    const d = ev.data || {};
+    if(d.type === "s1-height"){
+      const frame = document.getElementById("s1IntegratedFrame");
+      if(frame && Number(d.height)>0){
+        const newHeight = Math.max(540, Math.min(840, Math.ceil(Number(d.height)) + 4));
+        frame.style.height = newHeight + "px";
+      }
+    }
+    if(d.type === "s1-score"){
+      if(d.kind === "correct" && typeof window.addCorrect === "function") window.addCorrect(1);
+      if(d.kind === "fail" && typeof window.addFail === "function") window.addFail();
+    }
+  });
 })();
 </script>
 
@@ -2004,7 +2104,7 @@ img{max-width:100%}
  .clubBrand img{width:38px;height:38px}
  .clubBrand .coach{font-size:12px}
  .playerIdentity{position:relative!important;top:auto!important;left:auto!important;right:auto!important;width:max-content;max-width:92vw;margin:4px auto;font-size:12px}
- #menuScreen::before,#menuScreen::after{width:90px!important;top:240px!important;opacity:.17!important}
+ #menuScreen::before,#menuScreen::after{width:130px!important;top:235px!important;opacity:.32!important}
  #menuScreen::before{left:3px!important} #menuScreen::after{right:3px!important}
  #finalScreen{padding:5px 2px}
  #finalScreen .finalWrap{width:100%;max-width:100%}

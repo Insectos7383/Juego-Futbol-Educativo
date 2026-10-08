@@ -1,0 +1,29 @@
+BAIROA FÚTBOL CLUB — V25.84 CORREGIDO
+
+Esta carpeta contiene el juego completo.
+
+IMPORTANTE:
+1. Mantén TODOS estos archivos juntos en la misma carpeta.
+2. Abre index.html.
+3. S1 aprobado V23 está integrado visualmente dentro de la Sección 4:
+   - un solo menú principal
+   - una sola barra de desplazamiento de la página
+   - S2-S5 continúan usando el código principal
+4. Se incluyeron las imágenes y archivos externos que faltaban:
+   campo_aprobado.png
+   campo_lecciones_limpio.png
+   campo_saques_sin_balon.jpg
+   bairoa_logo.jpg
+   defensa.png
+   mediocampista.png
+   delantero.png
+   portero.png
+   actualizador.js
+   manifest.webmanifest
+   service-worker.js
+   icon-192.png
+   icon-512.png
+   s1_aprobado_v23.html
+
+NUEVO LOGO:
+mi_futbol_club_logo.png — logo oficial Mi Fútbol Club 2026.

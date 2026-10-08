@@ -1,26 +1,20 @@
 {
-  "name": "Mi Juego de Fútbol",
-  "short_name": "Juego Fútbol",
-  "description": "Juego educativo de fútbol de Bairoa Fútbol Club",
-  "lang": "es",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Mi Fútbol Club",
+  "short_name": "Mi Fútbol Club",
+  "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "any",
   "background_color": "#c9efff",
   "theme_color": "#c9efff",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
