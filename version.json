@@ -1,5 +1,5 @@
 {
-  "version": "25.73",
+  "version": "25.84",
   "url": "./",
-  "mensaje": "Hay una nueva versión del juego de fútbol disponible."
+  "notes": "S1 aprobado e integrado; S2-S5 temporalmente deshabilitados."
 }
