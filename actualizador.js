@@ -27,8 +27,20 @@
       const info=await r.json(); remember(info.version||CURRENT);
       if(newer(info.version,CURRENT)){
         banner('Nueva versión '+info.version+' disponible.', 'ACTUALIZAR', async function(){
-          try{if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration();if(reg) await reg.update();} }catch(e){}
-          location.href=(info.url||'./')+'?actualizado='+Date.now();
+          try{
+            if('serviceWorker' in navigator){
+              const reg=await navigator.serviceWorker.getRegistration();
+              if(reg){
+                await reg.update();
+                if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+              }
+            }
+          }catch(e){}
+          try{
+            const keys=await caches.keys();
+            await Promise.all(keys.filter(k=>k.startsWith('bairoa-futbol-')).map(k=>caches.delete(k)));
+          }catch(e){}
+          location.replace((info.url||'./')+'?actualizado='+Date.now());
         });
       }
     }catch(e){ banner('No se pudo comprobar la actualización. Puedes continuar usando esta versión.'); }
