@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bairoa-futbol-v25-84-r18';
+const CACHE_NAME = 'mi-futbol-club-v25-87-r21';
 
 const APP_ASSETS = [
   "./",
@@ -8,7 +8,6 @@ const APP_ASSETS = [
   "./version.json",
   "./manifest.webmanifest",
   "./mi_futbol_club_logo.png",
-  "./bairoa_logo.jpg",
   "./balon_seccion4.png",
   "./campo_aprobado.png",
   "./campo_lecciones_limpio.png",
@@ -17,8 +16,8 @@ const APP_ASSETS = [
   "./delantero.png",
   "./mediocampista.png",
   "./portero.png",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./mi-futbol-club-icon-192.png",
+  "./mi-futbol-club-icon-512.png"
 ];
 
 self.addEventListener('install', event => {

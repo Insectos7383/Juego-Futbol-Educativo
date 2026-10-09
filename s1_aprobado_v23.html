@@ -290,7 +290,9 @@ body.s1-embedded .overlay-card{
   const $ = s => document.querySelector(s);
   const content = $("#content"), dynamicField = $("#dynamicField"), feedback = $("#feedback");
 
+  const isKindleSilk = /Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
   function loadVoices() {
+    if (isKindleSilk || !("speechSynthesis" in window)) { voiceReady = true; chosenVoice = null; return; }
     const vs = speechSynthesis.getVoices();
     const spanish = vs.filter(v => /^es([-_]|$)/i.test(v.lang || ""));
     const latin = spanish.filter(v => /^es[-_](US|MX|PR|419|AR|CO|CL|PE|VE|UY|EC|GT|CR|PA|DO|BO|PY|SV|HN|NI)/i.test(v.lang || ""));
@@ -317,11 +319,11 @@ body.s1-embedded .overlay-card{
     voiceReady = true;
   }
   loadVoices();
-  if ("onvoiceschanged" in speechSynthesis) speechSynthesis.onvoiceschanged = loadVoices;
+  if (!isKindleSilk && "speechSynthesis" in window && "onvoiceschanged" in speechSynthesis) speechSynthesis.onvoiceschanged = loadVoices;
 
   function speak(text) {
     lastSpoken = text;
-    if (!("speechSynthesis" in window)) return;
+    if (isKindleSilk || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const isiPhoneIPad = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -339,8 +341,8 @@ body.s1-embedded .overlay-card{
 
   function speakThen(text, callback, pauseAfter=1200) {
     lastSpoken = text;
-    if (!("speechSynthesis" in window)) {
-      setTimeout(callback, pauseAfter);
+    if (isKindleSilk || !("speechSynthesis" in window)) {
+      setTimeout(callback, 220);
       return;
     }
     speechSynthesis.cancel();
@@ -632,7 +634,7 @@ body.s1-embedded .overlay-card{
 
   function speakStartPrompt(force=false) {
     const promptText = "Hola. Presiona el botón verde para comenzar.";
-    if (!("speechSynthesis" in window)) return;
+    if (isKindleSilk || !("speechSynthesis" in window)) return;
     if (window.__startPromptSpoken && !force) return;
     if ($("#startOverlay").classList.contains("hidden")) return;
 
@@ -659,9 +661,9 @@ body.s1-embedded .overlay-card{
     setTimeout(() => speakStartPrompt(), 3200);
   }
 
-  window.addEventListener("load", scheduleStartPrompt);
+  if (!isKindleSilk) window.addEventListener("load", scheduleStartPrompt);
 
-  if ("onvoiceschanged" in speechSynthesis) {
+  if (!isKindleSilk && "speechSynthesis" in window && "onvoiceschanged" in speechSynthesis) {
     const previousVoicesChanged = speechSynthesis.onvoiceschanged;
     speechSynthesis.onvoiceschanged = (...args) => {
       if (typeof previousVoicesChanged === "function") previousVoicesChanged(...args);

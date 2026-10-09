@@ -10,8 +10,8 @@
 
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#c9efff">
-<meta name="apple-mobile-web-app-title" content="Bairoa Fútbol">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Mi Fútbol Club">
+<link rel="apple-touch-icon" href="mi-futbol-club-icon-192.png">
 
 <style>
 *{box-sizing:border-box}
@@ -955,28 +955,45 @@ const $=x=>document.getElementById(x);
 function name(){return $("playerName").value.trim()}
 function playerNumber(){return $("playerNumber").value.trim()}
 function speak(t,d,rate=.82){
- speechSynthesis.cancel();
+ const isKindleSilk=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+ if(isKindleSilk || !("speechSynthesis" in window)){
+   if(d)setTimeout(d,220);
+   return;
+ }
+ try{if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}}catch(e){}
  let u=new SpeechSynthesisUtterance(t);
  u.voice=bairoaVoice || selectBairoaVoice();
  u.lang=(u.voice&&u.voice.lang)||"es-US";
  u.rate=.78; u.pitch=1.0; u.volume=1;
- let done=false,f=()=>{if(done)return;done=true;if(d)d()};
- u.onend=f;u.onerror=f;
- speechSynthesis.speak(u);
+ let done=false, watchdog=null, fallback=null;
+ const finish=()=>{
+   if(done)return;
+   done=true;
+   if(watchdog)clearInterval(watchdog);
+   if(fallback)clearTimeout(fallback);
+   if(d)d();
+ };
+ u.onend=finish;
+ u.onerror=finish;
+ const words=(String(t).trim().match(/\S+/g)||[]).length;
+ const fallbackMs=Math.max(5200,Math.min(15000,words*520+2200));
+ fallback=setTimeout(finish,fallbackMs);
+ watchdog=setInterval(()=>{try{if(speechSynthesis.paused)speechSynthesis.resume();}catch(e){}},800);
+ try{speechSynthesis.resume();speechSynthesis.speak(u);}catch(e){finish();}
 }
 function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active")}
-function openGame(g){speechSynthesis.cancel();
+function openGame(g){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
  if(g==="passes"){resetPasses();showScreen("passesScreen")}
  else if(g==="kicks"){resetKicks();showScreen("kicksScreen")}
  else{resetMoves();showScreen("movesScreen")}
 }
-function goHome(){speechSynthesis.cancel();resetPasses();resetKicks();resetMoves();showScreen("menuScreen")}
+function goHome(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}resetPasses();resetKicks();resetMoves();showScreen("menuScreen")}
 
 /* JUEGO 1 */
 let ps=0,pstep=0,pplaying=false,pwaiting=false,plocked=false,plast="";
 const pseq=[["DEFENSA","Portero. Pasa la pelota al defensa."],["MEDIOCAMPISTA","Defensa. Pasa la pelota al mediocampista."],["DELANTERO","Mediocampista. Pasa la pelota al delantero."]];
 function pspeak(t,d,rate){plast=t;speak(t,d,rate)}
-function startPasses(){speechSynthesis.cancel();pstep=0;pplaying=true;pwaiting=false;plocked=false;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pMsg").textContent="⚽ ¡Comienza la jugada!";setTimeout(showPass,350)}
+function startPasses(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}pstep=0;pplaying=true;pwaiting=false;plocked=false;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pMsg").textContent="⚽ ¡Comienza la jugada!";setTimeout(showPass,350)}
 function showPass(){if(pstep>=3)return readyShot();$("pInst").textContent="⚽ "+pseq[pstep][1];$("pMsg").textContent="Toca al jugador correcto.";pspeak(pseq[pstep][1])}
 function pickPass(n){
   document.body.classList.remove("kick-s4","kick-s5");
@@ -987,7 +1004,7 @@ function readyShot(){pplaying=false;pwaiting=true;plocked=false;$("pInst").textC
 function scoreGoal(){if(!pwaiting||plocked)return;plocked=true;pwaiting=false;$("shoot").style.display="none";$("pBall").style.left="94%";$("pBall").style.top="49%";setTimeout(()=>{ps+=3;$("pStars").textContent=ps;let nm=name();$("pInst").textContent="⚽⚽⚽ ¡GOOOOOOOL! ⚽⚽⚽";$("pMsg").textContent="🏆 ¡EXCELENTE JUGADA! +3 ESTRELLAS 🏆";$("goal").textContent=nm?"¡GOOOOOOOL DE "+nm.toUpperCase()+"!":"¡GOOOOOOOL!";$("goal").style.display="block";pspeak(nm?"¡Góóóóóóóóóóóól de "+nm+"!":"¡Góóóóóóóóóóóól!",null,.32)},1150)}
 function repeatPass(){if(plast)pspeak(plast);else pspeak("Presiona comenzar.")}
 function pHome(){$("pBall").style.left="18.2%";$("pBall").style.top="62%"}
-function resetPasses(){speechSynthesis.cancel();ps=0;pstep=0;pplaying=false;pwaiting=false;plocked=false;plast="";$("pStars").textContent=0;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pInst").textContent="Presiona COMENZAR";$("pMsg").textContent="Aprenderemos las posiciones jugando."}
+function resetPasses(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}ps=0;pstep=0;pplaying=false;pwaiting=false;plocked=false;plast="";$("pStars").textContent=0;$("shoot").style.display="none";$("goal").style.display="none";pHome();$("pInst").textContent="Presiona COMENZAR";$("pMsg").textContent="Aprenderemos las posiciones jugando."}
 
 /* JUEGO 2 */
 const kicks=[
@@ -1000,13 +1017,13 @@ const kicks=[
 let si=0,ss=0,sphase="idle",slocked=false,slast="";
 function sspeak(t,d){slast=t;speak(t,d)}
 function zones(v){["sCenter","sSide","sSideBottom","sCorner","sCornerBottom","sMeta","sMetaFoot"].forEach(id=>$(id).style.display=v?"block":"none")}
-function startKicks(){speechSynthesis.cancel();si=0;ss=0;slocked=false;$("sStars").textContent=0;$("celebrate").style.display="none";nextKick()}
+function startKicks(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}si=0;ss=0;slocked=false;$("sStars").textContent=0;$("celebrate").style.display="none";nextKick()}
 function nextKick(){if(si>=5)return finishKicks();let k=kicks[si];sphase="place";slocked=false;$("round").textContent=k.n;$("answers").style.display="none";$("sBall").style.display="none";zones(true);$("sInst").textContent="SAQUE "+k.n+": ¿DÓNDE SE HACE?";$("sMsg").textContent="Toca el lugar correcto en la cancha.";sspeak("Saque número "+k.n+". Toca en la cancha el lugar donde se hace.")}
 function choosePlace(p){if(sphase!=="place"||slocked)return;let k=kicks[si];if(p!==k.place){slocked=true;$("sMsg").textContent="🙂 Esa no es la respuesta correcta. Inténtalo otra vez.";return sspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>slocked=false)}slocked=true;ss++;$("sStars").textContent=ss;zones(false);$("sBall").style.left=k.ball[0];$("sBall").style.top=k.ball[1];$("sBall").style.display="block";$("sMsg").textContent="⭐ ¡Correcto! Se hace "+k.placeText+".";sspeak("¡Muy bien! ¡Correcto! Se hace "+k.placeText+".",()=>{sphase="method";slocked=false;$("answers").style.display="block";$("sInst").textContent="SAQUE "+k.n+": ¿CÓMO SE HACE?";$("sMsg").textContent="Escoge PIE o MANOS.";sspeak("Ahora dime. ¿Se hace con el pie o con las manos?")})}
 function chooseMethod(m){if(sphase!=="method"||slocked)return;let k=kicks[si];if(m!==k.method){slocked=true;$("sMsg").textContent="🙂 Esa no es la respuesta correcta. Inténtalo otra vez.";return sspeak("Esa no es la respuesta correcta. Inténtalo otra vez.",()=>slocked=false)}slocked=true;ss++;$("sStars").textContent=ss;$("answers").style.display="none";$("celebrate").style.display="block";$("sInst").textContent="⭐ ¡SAQUE "+k.n+" CORRECTO!";$("sMsg").textContent="Se realiza "+k.methodText+".";let nm=name();sspeak("¡Excelente"+(nm?", "+nm:"")+"! Saque número "+k.n+", "+k.methodText+".",()=>setTimeout(()=>{$("celebrate").style.display="none";si++;nextKick()},700))}
 function finishKicks(){sphase="done";zones(false);$("answers").style.display="none";$("sBall").style.display="none";$("round").textContent="5";let nm=name();$("sInst").textContent="🏆 ¡COMPLETASTE LOS 5 SAQUES!";$("sMsg").textContent="⭐ ¡Excelente práctica! Total: "+ss+" estrellas.";$("celebrate").textContent="🏆 ¡5 SAQUES! 🏆";$("celebrate").style.display="block";sspeak("¡Excelente"+(nm?", "+nm:"")+"! Completaste los cinco saques.")}
 function repeatKick(){if(slast)sspeak(slast);else sspeak("Presiona comenzar.")}
-function resetKicks(){speechSynthesis.cancel();si=0;ss=0;sphase="idle";slocked=false;slast="";$("sStars").textContent=0;$("round").textContent="—";zones(false);$("answers").style.display="none";$("sBall").style.display="none";$("celebrate").style.display="none";$("celebrate").textContent="⭐ ¡MUY BIEN! ⭐";$("sInst").textContent="Presiona COMENZAR";$("sMsg").textContent="Practicaremos dónde se hace cada saque y si se hace con el pie o con las manos."}
+function resetKicks(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}si=0;ss=0;sphase="idle";slocked=false;slast="";$("sStars").textContent=0;$("round").textContent="—";zones(false);$("answers").style.display="none";$("sBall").style.display="none";$("celebrate").style.display="none";$("celebrate").textContent="⭐ ¡MUY BIEN! ⭐";$("sInst").textContent="Presiona COMENZAR";$("sMsg").textContent="Practicaremos dónde se hace cada saque y si se hace con el pie o con las manos."}
 
 /* ACTIVIDAD 3: MOVIMIENTO DE LAS POSICIONES */
 const moveData={
@@ -1084,7 +1101,7 @@ function practiceMove(dir){
 }
 function demoAgain(){if(!currentPos)return mSpeak("Primero escoge una posición.");clearTimeout(demoTimer);mLocked=true;$("movePrompt").style.display="none";$("ruleCard").style.display="none";setPlayer(currentPos);runDemo()}
 function repeatMove(){if(mLast)mSpeak(mLast);else mSpeak("Escoge una posición para comenzar.")}
-function resetMoves(){clearTimeout(demoTimer);speechSynthesis.cancel();document.querySelectorAll(".moveMenu button").forEach(b=>b.classList.remove("selectedPos"));currentPos="";mStars=0;mLast="";mLocked=false;$("mStars").textContent=0;$("soloPlayer").style.display="none";$("moveZone").style.display="none";$("movePrompt").style.display="none";$("ruleCard").style.display="none";$("mInst").textContent="Escoge una posición";$("mMsg").textContent="Veremos primero la demostración y después tú practicarás."}
+function resetMoves(){clearTimeout(demoTimer);if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}document.querySelectorAll(".moveMenu button").forEach(b=>b.classList.remove("selectedPos"));currentPos="";mStars=0;mLast="";mLocked=false;$("mStars").textContent=0;$("soloPlayer").style.display="none";$("moveZone").style.display="none";$("movePrompt").style.display="none";$("ruleCard").style.display="none";$("mInst").textContent="Escoge una posición";$("mMsg").textContent="Veremos primero la demostración y después tú practicarás."}
 
 let bairoaVoice=null;
 function selectBairoaVoice(){
@@ -1107,7 +1124,8 @@ function selectBairoaVoice(){
   bairoaVoice=female || preferred[0] || spanish[0] || vs[0];
   return bairoaVoice;
 }
-if(window.speechSynthesis){
+const isKindleSilkGlobal=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+if(window.speechSynthesis && !isKindleSilkGlobal){
   selectBairoaVoice();
   speechSynthesis.onvoiceschanged=selectBairoaVoice;
 }
@@ -1393,13 +1411,13 @@ function openKickLesson(n){
  speakKick();
 }
 function speakKick(){
- const u=new SpeechSynthesisUtterance(kickLessons[currentKick].speech);u.lang="es-ES";u.rate=.88;
- speechSynthesis.cancel();u.voice=bairoaVoice || selectBairoaVoice();
-u.lang=(u.voice&&u.voice.lang)||"es-US";
-u.rate=.78;
-u.pitch=1.0;
-speechSynthesis.cancel();
-speechSynthesis.speak(u);
+ const isKindleSilk=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+ if(isKindleSilk || !("speechSynthesis" in window))return;
+ const u=new SpeechSynthesisUtterance(kickLessons[currentKick].speech);
+ u.voice=bairoaVoice || selectBairoaVoice();
+ u.lang=(u.voice&&u.voice.lang)||"es-US";
+ u.rate=.78;u.pitch=1.0;
+ try{if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}speechSynthesis.speak(u);}catch(e){}
 }
 
 function animateS4FiveDirections(){
@@ -1434,19 +1452,19 @@ function animateS5FiveDirections(){
 function demoKick(){
  const k=kickLessons[currentKick],b=document.getElementById("kickBall");
  if(currentKick===4){
-   speechSynthesis.cancel();
+   if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
    animateS4FiveDirections();
    speakKick();
    return;
  }
  if(currentKick===5){
-   speechSynthesis.cancel();
+   if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
    animateS5FiveDirections();
    speakKick();
    return;
  }
  if(currentKick===1){
-   speechSynthesis.cancel();
+   if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
    b.style.transition="none"; b.style.left="50%"; b.style.top="50%";
    setTimeout(()=>{b.style.transition="all 1.05s ease"; b.style.left="39%"; b.style.top="36%";},350);
    setTimeout(()=>{b.style.transition="none"; b.style.left="50%"; b.style.top="50%";},1800);
@@ -1455,7 +1473,7 @@ function demoKick(){
    speakKick(); return;
  }
  if(currentKick===3){
-   speechSynthesis.cancel();
+   if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
    const start=()=>{b.style.transition="none";b.style.left="95%";b.style.top="91%";};
    start();
    setTimeout(()=>{b.style.transition="all 1.05s ease";b.style.left="68%";b.style.top="76%";},350);
@@ -1493,7 +1511,7 @@ function answerKick(i){
 u.lang=(u.voice&&u.voice.lang)||"es-US";
 u.rate=.78;
 u.pitch=1.0;
-speechSynthesis.cancel();
+if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
 speechSynthesis.speak(u);return;
  }
  const ok=i===kickLessons[currentKick].correct;
@@ -1502,7 +1520,7 @@ speechSynthesis.speak(u);return;
  u.lang="es-ES";u.voice=bairoaVoice || selectBairoaVoice();
  u.lang=(u.voice&&u.voice.lang)||"es-US";
  u.rate=.78;u.pitch=1.0;
- speechSynthesis.cancel();speechSynthesis.speak(u);
+ if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}speechSynthesis.speak(u);
 }
 
 if(typeof showMainMenu!=="function"){
@@ -1513,14 +1531,14 @@ if(typeof showMainMenu!=="function"){
 }
 
 function openActivity4(){
-  speechSynthesis.cancel();
+  if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
   document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
   document.getElementById("activity4").style.display="block";
   openKickLesson(1);
   window.scrollTo(0,0);
 }
 function goHomeFromActivity4(){
-  speechSynthesis.cancel();
+  if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}
   document.getElementById("activity4").style.display="none";
   showScreen("menuScreen");
   window.scrollTo(0,0);
@@ -1751,8 +1769,8 @@ const finalQuestions=[
  {q:"Si la pelota sale por una esquina, ¿qué saque corresponde?",type:"option",ans:"S3",opts:["S1","S2","S3","S4","S5"]}
 ];
 function finalSpeak(t,done){finalLast=t;speak(t,done)}
-function openFinalGame(){speechSynthesis.cancel();document.getElementById('activity4').style.display='none';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('finalScreen').classList.add('active');resetFinalGame();refreshPlayerIdentity();refreshClubBrand();window.scrollTo(0,0)}
-function goHomeFromFinal(){speechSynthesis.cancel();clearFinalTimers();resetFinalGame();showScreen('menuScreen');window.scrollTo(0,0)}
+function openFinalGame(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}document.getElementById('activity4').style.display='none';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('finalScreen').classList.add('active');resetFinalGame();refreshPlayerIdentity();refreshClubBrand();window.scrollTo(0,0)}
+function goHomeFromFinal(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}clearFinalTimers();resetFinalGame();showScreen('menuScreen');window.scrollTo(0,0)}
 function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalFails=0;finalLocked=false;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
 function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;finalFails=0;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
 function repeatFinalQuestion(){if(finalLast)finalSpeak(finalLast)}
@@ -1911,10 +1929,10 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.84</span></div>
-<script src="actualizador.js"></script>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.87</span></div>
+<script src="actualizador.js?v=25.87-r21"></script>
 
-<!-- V25.84 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
+<!-- V25.87 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -1961,7 +1979,8 @@ try {
  const K='juegoFutbolDatosV2571'; let data={club:'',name:'',number:''}; const $=id=>document.getElementById(id);
  let v2578SpeechToken=0;
  function speak(text,done){
-  if(!('speechSynthesis' in window)){if(done)done();return}
+  const isKindleSilk=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+  if(isKindleSilk || !('speechSynthesis' in window)){if(done)setTimeout(done,220);return}
   const token=++v2578SpeechToken;
   try{speechSynthesis.cancel()}catch(e){}
   const parts=String(text||'').match(/[^.!?¡¿]+[.!?]+|[^.!?¡¿]+$/g)||[String(text||'')];
@@ -1993,7 +2012,22 @@ try {
  function ask(field){const prompts={club:'Escribe el nombre que quieres ponerle a tu club.',name:'Ahora escribe tu nombre.',number:'Ahora escribe tu número en el equipo.'};$('v2571Content').innerHTML='<p id="v2571Prompt">'+prompts[field]+'</p><input id="v2571Input" '+(field==='number'?'inputmode="numeric" pattern="[0-9]*"':'')+' autocomplete="off"><br><button class="v2571Btn v2571Next" id="v2571Next">🔊 CONFIRMAR</button>';const inp=$('v2571Input');inp.focus();inp.addEventListener('input',()=>{inp.value=field==='number'?inp.value.replace(/\D/g,''):inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 \-]/g,'')});$('v2571Next').onclick=()=>{const v=inp.value.trim();if(!v){speak(prompts[field]);return}confirmField(field,v)};speak(prompts[field])}
  function confirmField(field,v){const q={club:'Escribiste '+v+' como nombre de tu club. ¿Está correcto?',name:'Tu nombre es '+v+'. ¿Está correcto?',number:'Tu número en el equipo es '+v+'. ¿Está correcto?'}[field];const t=q+' Presiona el botón verde que dice Sí si está correcto. Presiona el botón amarillo que dice No si quieres cambiarlo.';$('v2571Content').innerHTML='<p id="v2571Prompt">'+esc(q)+'</p><button class="v2571Btn v2571Yes" id="v2571Yes">✅ SÍ</button><button class="v2571Btn v2571No" id="v2571No">❌ NO</button>';speak(t);$('v2571Yes').onclick=()=>{data[field]=v;if(field==='club')ask('name');else if(field==='name')ask('number');else finish()};$('v2571No').onclick=()=>speak('Está bien. Escríbelo nuevamente.',()=>ask(field))}
  function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak(t,()=>{$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}})}}else{$('v2571Content').innerHTML='<p><b>Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</b></p><p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p><p><b>🏆 ¡COMENCEMOS!</b></p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',()=>ask('club'))}}}
- window.addEventListener('load',begin,{once:true});
+ if(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent)){
+   window.addEventListener('load',function(){
+     try{begin();}
+     catch(e){
+       var o=document.getElementById('v2571Overlay');
+       var c=document.getElementById('v2571Content');
+       if(c){
+         c.innerHTML='<p><b>⚽ ¡BIENVENIDO A TU JUEGO DE FÚTBOL! ⚽</b></p><p>Modo compatible con Kindle Fire.</p><button class="v2571Btn v2571Yes" id="kindleStartBtn">▶ COMENZAR</button>';
+         var b=document.getElementById('kindleStartBtn');
+         if(b)b.onclick=function(){if(o)o.remove();};
+       }
+     }
+   },{once:true});
+ }else{
+   window.addEventListener('load',begin,{once:true});
+ }
 })();
 </script>
 
@@ -2057,6 +2091,21 @@ try {
       if(d.kind === "fail" && typeof window.addFail === "function") window.addFail();
     }
   });
+})();
+</script>
+
+
+<script id="v2587-kindle-safe-mode">
+(function(){
+  var isKindle=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+  if(!isKindle)return;
+  window.addEventListener('load',function(){
+    var n=document.createElement('div');
+    n.textContent='Kindle Fire: modo compatible activado. La voz queda desactivada para evitar congelamientos.';
+    n.style.cssText='position:fixed;top:0;left:0;right:0;z-index:220000;background:#fff3b0;color:#17233c;text-align:center;font:700 12px Arial;padding:5px 8px;border-bottom:1px solid #c9a900;';
+    document.body.appendChild(n);
+    setTimeout(function(){if(n&&n.parentNode)n.parentNode.removeChild(n);},5000);
+  },{once:true});
 })();
 </script>
 
