@@ -960,9 +960,9 @@ function speak(t,d,rate=.82){
    if(d)setTimeout(d,220);
    return;
  }
- try{speechSynthesis.cancel();}catch(e){}
+ try{if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}}catch(e){}
  let u=new SpeechSynthesisUtterance(t);
- try{u.voice=bairoaVoice || selectBairoaVoice();}catch(e){}
+ u.voice=bairoaVoice || selectBairoaVoice();
  u.lang=(u.voice&&u.voice.lang)||"es-US";
  u.rate=.78; u.pitch=1.0; u.volume=1;
  let done=false, watchdog=null, fallback=null;
@@ -1128,8 +1128,6 @@ const isKindleSilkGlobal=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,
 if(window.speechSynthesis && !isKindleSilkGlobal){
   selectBairoaVoice();
   speechSynthesis.onvoiceschanged=selectBairoaVoice;
-}catch(e){}}
-  };
 }
 
 
@@ -1931,10 +1929,10 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.89</span></div>
-<script src="actualizador.js?v=25.89-r23"></script>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.87</span></div>
+<script src="actualizador.js?v=25.87-r21"></script>
 
-<!-- V25.89 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
+<!-- V25.87 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -2103,14 +2101,13 @@ try {
   if(!isKindle)return;
   window.addEventListener('load',function(){
     var n=document.createElement('div');
-    n.textContent='Kindle Fire: modo compatible estable. Voz desactivada para evitar congelamientos.';
+    n.textContent='Kindle Fire: modo compatible activado. La voz queda desactivada para evitar congelamientos.';
     n.style.cssText='position:fixed;top:0;left:0;right:0;z-index:220000;background:#fff3b0;color:#17233c;text-align:center;font:700 12px Arial;padding:5px 8px;border-bottom:1px solid #c9a900;';
     document.body.appendChild(n);
     setTimeout(function(){if(n&&n.parentNode)n.parentNode.removeChild(n);},5000);
   },{once:true});
 })();
 </script>
-
 
 </body></html>
 <style>

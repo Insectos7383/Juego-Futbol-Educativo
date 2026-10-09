@@ -1,15 +1,12 @@
-MI FÚTBOL CLUB V25.89
+MI FÚTBOL CLUB V25.87
 
-OBJETIVO
-- Recuperar la estabilidad de Kindle Fire después de que Fire OS 7.3.3.1 volvió a congelarse al intentar usar speechSynthesis.
+CAMBIOS
+- Logo definitivo: PRIMERA imagen seleccionada, sin fuego.
+- Iconos 192x192 y 512x512 creados con ese mismo logo.
+- Kindle Fire / Silk: modo compatible para evitar el congelamiento en bienvenida.
+- En Kindle se desactiva la voz y las transiciones continúan visualmente.
+- S1 también usa modo sin voz en Kindle.
+- PC, iPhone y Samsung mantienen la voz y funcionamiento normal.
 
-KINDLE FIRE
-- Voz desactivada.
-- Las pantallas y transiciones continúan sin esperar al motor de voz.
-- Evita el congelamiento en la pantalla inicial de ESCUCHANDO.
-
-PC / iPHONE / SAMSUNG
-- Mantienen el comportamiento normal con voz.
-
-SIGUIENTE OPCIÓN PARA KINDLE
-- Añadir archivos de audio pregrabados en una versión futura, en lugar de speechSynthesis.
+SUBIDA A GITHUB
+Reemplaza los archivos del repositorio con los de esta carpeta.
