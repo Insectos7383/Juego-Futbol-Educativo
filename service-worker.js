@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mi-futbol-club-v25-87-r21';
+const CACHE_NAME = 'mi-futbol-club-v25-88-r22';
 
 const APP_ASSETS = [
   "./",

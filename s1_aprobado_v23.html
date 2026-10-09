@@ -292,7 +292,7 @@ body.s1-embedded .overlay-card{
 
   const isKindleSilk = /Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
   function loadVoices() {
-    if (isKindleSilk || !("speechSynthesis" in window)) { voiceReady = true; chosenVoice = null; return; }
+    if ((isKindleSilk && !kindleVoiceEnabled) || !("speechSynthesis" in window)) { voiceReady = true; chosenVoice = null; return; }
     const vs = speechSynthesis.getVoices();
     const spanish = vs.filter(v => /^es([-_]|$)/i.test(v.lang || ""));
     const latin = spanish.filter(v => /^es[-_](US|MX|PR|419|AR|CO|CL|PE|VE|UY|EC|GT|CR|PA|DO|BO|PY|SV|HN|NI)/i.test(v.lang || ""));
@@ -323,7 +323,7 @@ body.s1-embedded .overlay-card{
 
   function speak(text) {
     lastSpoken = text;
-    if (isKindleSilk || !("speechSynthesis" in window)) return;
+    if ((isKindleSilk && !kindleVoiceEnabled) || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const isiPhoneIPad = /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -341,7 +341,7 @@ body.s1-embedded .overlay-card{
 
   function speakThen(text, callback, pauseAfter=1200) {
     lastSpoken = text;
-    if (isKindleSilk || !("speechSynthesis" in window)) {
+    if ((isKindleSilk && !kindleVoiceEnabled) || !("speechSynthesis" in window)) {
       setTimeout(callback, 220);
       return;
     }
@@ -634,7 +634,7 @@ body.s1-embedded .overlay-card{
 
   function speakStartPrompt(force=false) {
     const promptText = "Hola. Presiona el botón verde para comenzar.";
-    if (isKindleSilk || !("speechSynthesis" in window)) return;
+    if ((isKindleSilk && !kindleVoiceEnabled) || !("speechSynthesis" in window)) return;
     if (window.__startPromptSpoken && !force) return;
     if ($("#startOverlay").classList.contains("hidden")) return;
 
@@ -723,6 +723,22 @@ body.s1-embedded .overlay-card{
   }else{
     setInterval(reportHeight,1000);
   }
+})();
+</script>
+
+
+<script id="s1-kindle-voice-unlock">
+(function(){
+  var isKindle=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
+  if(!isKindle)return;
+  document.addEventListener('click',function(ev){
+    var t=ev.target;
+    if(!t)return;
+    var txt=(t.textContent||'').toUpperCase();
+    if(txt.indexOf('COMENZAR')>=0 || txt.indexOf('CONTINUAR')>=0){
+      try{if(typeof enableKindleVoice==='function')enableKindleVoice();}catch(e){}
+    }
+  },true);
 })();
 </script>
 

@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const CURRENT='25.87';
+  const CURRENT='25.88';
   const VERSION_URL='./version.json';
   function newer(a,b){
     const A=String(a).split('.').map(Number), B=String(b).split('.').map(Number);

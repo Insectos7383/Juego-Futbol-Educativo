@@ -1,12 +1,11 @@
-MI FÚTBOL CLUB V25.87
+MI FÚTBOL CLUB V25.88
 
-CAMBIOS
-- Logo definitivo: PRIMERA imagen seleccionada, sin fuego.
-- Iconos 192x192 y 512x512 creados con ese mismo logo.
-- Kindle Fire / Silk: modo compatible para evitar el congelamiento en bienvenida.
-- En Kindle se desactiva la voz y las transiciones continúan visualmente.
-- S1 también usa modo sin voz en Kindle.
-- PC, iPhone y Samsung mantienen la voz y funcionamiento normal.
+- Kindle Fire / Silk no intenta hablar al cargar.
+- La voz se habilita después de pulsar COMENZAR o CONTINUAR.
+- PC, iPhone y Samsung mantienen su comportamiento actual.
 
-SUBIDA A GITHUB
-Reemplaza los archivos del repositorio con los de esta carpeta.
+PRUEBA CLAVE EN KINDLE:
+1. Abrir el juego.
+2. Confirmar que no se congele en bienvenida.
+3. Pulsar COMENZAR.
+4. Verificar si desde entonces se escucha la voz y el juego sigue avanzando.
