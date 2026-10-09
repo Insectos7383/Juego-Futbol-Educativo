@@ -954,19 +954,9 @@ input{user-select:text;-webkit-user-select:text}
 const $=x=>document.getElementById(x);
 function name(){return $("playerName").value.trim()}
 function playerNumber(){return $("playerNumber").value.trim()}
-let kindleVoiceEnabled=false;
-window.enableKindleVoice=function(){
-  kindleVoiceEnabled=true;
-  try{
-    if(window.speechSynthesis){
-      speechSynthesis.resume();
-      speechSynthesis.cancel();
-    }
-  }catch(e){}
-};
 function speak(t,d,rate=.82){
  const isKindleSilk=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
- if((isKindleSilk && !kindleVoiceEnabled) || !("speechSynthesis" in window)){
+ if(isKindleSilk || !("speechSynthesis" in window)){
    if(d)setTimeout(d,220);
    return;
  }
@@ -1138,9 +1128,7 @@ const isKindleSilkGlobal=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,
 if(window.speechSynthesis && !isKindleSilkGlobal){
   selectBairoaVoice();
   speechSynthesis.onvoiceschanged=selectBairoaVoice;
-}else if(window.speechSynthesis && isKindleSilkGlobal){
-  speechSynthesis.onvoiceschanged=function(){
-    if(kindleVoiceEnabled){try{selectBairoaVoice();}catch(e){}}
+}catch(e){}}
   };
 }
 
@@ -1943,10 +1931,10 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.88</span></div>
-<script src="actualizador.js?v=25.88-r22"></script>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.89</span></div>
+<script src="actualizador.js?v=25.89-r23"></script>
 
-<!-- V25.88 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
+<!-- V25.89 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -1994,7 +1982,7 @@ try {
  let v2578SpeechToken=0;
  function speak(text,done){
   const isKindleSilk=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
-  if((isKindleSilk && !kindleVoiceEnabled) || !('speechSynthesis' in window)){if(done)setTimeout(done,220);return}
+  if(isKindleSilk || !('speechSynthesis' in window)){if(done)setTimeout(done,220);return}
   const token=++v2578SpeechToken;
   try{speechSynthesis.cancel()}catch(e){}
   const parts=String(text||'').match(/[^.!?¡¿]+[.!?]+|[^.!?¡¿]+$/g)||[String(text||'')];
@@ -2115,7 +2103,7 @@ try {
   if(!isKindle)return;
   window.addEventListener('load',function(){
     var n=document.createElement('div');
-    n.textContent='Kindle Fire: modo compatible activado. La voz se habilita después de presionar COMENZAR.';
+    n.textContent='Kindle Fire: modo compatible estable. Voz desactivada para evitar congelamientos.';
     n.style.cssText='position:fixed;top:0;left:0;right:0;z-index:220000;background:#fff3b0;color:#17233c;text-align:center;font:700 12px Arial;padding:5px 8px;border-bottom:1px solid #c9a900;';
     document.body.appendChild(n);
     setTimeout(function(){if(n&&n.parentNode)n.parentNode.removeChild(n);},5000);
@@ -2123,27 +2111,6 @@ try {
 })();
 </script>
 
-
-<script id="v2588-kindle-voice-unlock">
-(function(){
-  var isKindle=/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent);
-  if(!isKindle)return;
-  document.addEventListener('click',function(ev){
-    var t=ev.target;
-    if(!t)return;
-    var txt=(t.textContent||'').toUpperCase();
-    if(txt.indexOf('COMENZAR')>=0 || txt.indexOf('CONTINUAR')>=0 || (t.classList && t.classList.contains('v2571Yes'))){
-      if(window.enableKindleVoice)window.enableKindleVoice();
-      try{
-        var u=new SpeechSynthesisUtterance('Listo');
-        u.lang='es-US'; u.rate=.78; u.pitch=1.0; u.volume=0.01;
-        speechSynthesis.speak(u);
-        speechSynthesis.cancel();
-      }catch(e){}
-    }
-  },true);
-})();
-</script>
 
 </body></html>
 <style>

@@ -1,11 +1,15 @@
-MI FÚTBOL CLUB V25.88
+MI FÚTBOL CLUB V25.89
 
-- Kindle Fire / Silk no intenta hablar al cargar.
-- La voz se habilita después de pulsar COMENZAR o CONTINUAR.
-- PC, iPhone y Samsung mantienen su comportamiento actual.
+OBJETIVO
+- Recuperar la estabilidad de Kindle Fire después de que Fire OS 7.3.3.1 volvió a congelarse al intentar usar speechSynthesis.
 
-PRUEBA CLAVE EN KINDLE:
-1. Abrir el juego.
-2. Confirmar que no se congele en bienvenida.
-3. Pulsar COMENZAR.
-4. Verificar si desde entonces se escucha la voz y el juego sigue avanzando.
+KINDLE FIRE
+- Voz desactivada.
+- Las pantallas y transiciones continúan sin esperar al motor de voz.
+- Evita el congelamiento en la pantalla inicial de ESCUCHANDO.
+
+PC / iPHONE / SAMSUNG
+- Mantienen el comportamiento normal con voz.
+
+SIGUIENTE OPCIÓN PARA KINDLE
+- Añadir archivos de audio pregrabados en una versión futura, en lugar de speechSynthesis.

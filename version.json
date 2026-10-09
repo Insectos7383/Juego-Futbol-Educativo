@@ -1,5 +1,5 @@
 {
-  "version": "25.88",
+  "version": "25.89",
   "url": "./",
-  "notes": "Kindle Fire: voz habilitada solo después de pulsar COMENZAR/CONTINUAR; PC, iPhone y Samsung sin cambios."
+  "notes": "Kindle Fire vuelve a modo estable sin speechSynthesis para evitar congelamiento. PC, iPhone y Samsung mantienen voz normal."
 }
