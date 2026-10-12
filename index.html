@@ -1029,7 +1029,7 @@ function resetKicks(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{
 const moveData={
  PORTERO:{num:"1",color:"#268de0",zone:["2%","30%","17%","40%"],start:["11%","50%"],
   demo:[["7%","40%"],["7%","60%"],["15%","50%"],["9%","50%"]],
-  desc:"El portero se queda cerquita de su portería y se mueve de izquierda a derecha para tapar el balón con sus manos.",
+  desc:"El portero se queda cerquita de su portería y se mueve de izquierda a derecha para bloquear el balón con sus manos y también con sus pies.",
   rule:"Regla de oro: no debe salir corriendo lejos de su área. Si tiene el balón, se lo pasa rápido con las manos o el pie a su defensa.",
   allowed:["IZQUIERDA","DERECHA","ADELANTE","ATRAS"]},
  DEFENSA:{num:"4",color:"#e23b3b",zone:["16%","12%","32%","76%"],start:["31%","50%"],
@@ -1698,7 +1698,7 @@ document.addEventListener("DOMContentLoaded", function(){
 #finalScreen .finalWrap{max-width:850px;margin:0 auto}
 #finalQuestion{font-size:21px;font-weight:900;color:#10257e;background:#fff1b8;border:3px solid #f1b51c;border-radius:13px;padding:10px;margin:8px 0}
 #finalMsg{font-size:17px;font-weight:800;min-height:26px;margin:7px 0;color:#10257e}
-#finalField{position:relative;width:840px;max-width:100%;aspect-ratio:2/1;margin:8px auto;background:url('campo_aprobado.png') center/100% 100% no-repeat;border:6px solid #fff;box-sizing:border-box;overflow:hidden}
+#finalField{position:relative;width:840px;max-width:100%;aspect-ratio:2/1;margin:8px auto;background:url('campo_lecciones_limpio.png') center/100% 100% no-repeat;border:6px solid #fff;box-sizing:border-box;overflow:hidden}
 .finalHot{position:absolute;background:rgba(255,220,40,.15);border:3px dashed rgba(255,220,40,.35);border-radius:50%;cursor:pointer;display:none;z-index:8}
 #finalCenter{left:44%;top:38%;width:12%;height:24%}
 #finalDefense{left:20%;top:10%;width:23%;height:40%}
@@ -1706,6 +1706,17 @@ document.addEventListener("DOMContentLoaded", function(){
 #finalForward{left:57%;top:18%;width:27%;height:55%}
 #finalGoal{right:0;top:25%;width:17%;height:50%;border-radius:8px}
 #finalBall{position:absolute;left:49%;top:47%;font-size:38px;z-index:12;transition:left .9s ease,top .9s ease;filter:drop-shadow(1px 2px 1px #333)}
+.finalOwnPlayer{position:absolute;z-index:9;height:24%;width:auto;object-fit:contain;filter:drop-shadow(2px 3px 2px rgba(0,0,0,.32));pointer-events:none;transform-origin:center center}
+#finalOwnKeeper{left:5.5%;top:35%;height:29%}
+#finalOwnDefense{left:27%;top:18%;height:23%}
+#finalOwnMid{left:39%;top:57%;height:24%}
+#finalOwnForward{left:55%;top:28%;height:25%;transform:scaleX(-1)}
+.finalOwnLabel{position:absolute;z-index:11;background:#fff;border:3px solid #222;border-radius:12px;padding:4px 8px;font-size:12px;font-weight:1000;color:#10257e;pointer-events:none}
+#finalOwnKeeperLabel{left:5%;top:66%}
+#finalOwnDefenseLabel{left:29%;top:40%}
+#finalOwnMidLabel{left:39%;top:80%}
+#finalOwnForwardLabel{left:57%;top:54%}
+@media(max-width:700px){.finalOwnLabel{font-size:9px;padding:2px 5px;border-width:2px}}
 #finalOptions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px auto;max-width:850px}
 .finalOption{font-size:17px;font-weight:900;padding:10px 16px;border:3px solid #222;border-radius:12px;background:white;cursor:pointer}
 .finalOption:hover{transform:scale(1.04)}
@@ -1732,6 +1743,14 @@ document.addEventListener("DOMContentLoaded", function(){
    <button class="finalHot" id="finalMid" onclick="finalPickPlace('MEDIOCAMPISTA')" aria-label="Mediocampista"></button>
    <button class="finalHot" id="finalForward" onclick="finalPickPlace('DELANTERO')" aria-label="Delantero"></button>
    <button class="finalHot" id="finalGoal" onclick="finalPickPlace('PORTERIA')" aria-label="Portería"></button>
+   <img id="finalOwnKeeper" class="finalOwnPlayer" src="portero.png" alt="Portero">
+   <div id="finalOwnKeeperLabel" class="finalOwnLabel">PORTERO</div>
+   <img id="finalOwnDefense" class="finalOwnPlayer" src="defensa.png" alt="Defensa">
+   <div id="finalOwnDefenseLabel" class="finalOwnLabel">DEFENSA</div>
+   <img id="finalOwnMid" class="finalOwnPlayer" src="mediocampista.png" alt="Mediocampista">
+   <div id="finalOwnMidLabel" class="finalOwnLabel">MEDIOCAMPISTA</div>
+   <img id="finalOwnForward" class="finalOwnPlayer" src="mediocampista.png" alt="Delantero">
+   <div id="finalOwnForwardLabel" class="finalOwnLabel">DELANTERO</div>
    <img id="finalOpponentKeeper" src="portero.png" alt="Portero contrario" style="filter:sepia(1) saturate(6) hue-rotate(355deg) brightness(1.18) drop-shadow(2px 3px 2px rgba(0,0,0,.35));">
    <div id="finalKeeperEight">8</div>
    <div id="finalOpponentLabel">PORTERO CONTRARIO</div>
@@ -1753,8 +1772,8 @@ const finalQuestions=[
  {q:"¿Cuál es el número del saque inicial?",type:"option",ans:"S1",opts:["S1","S2","S3","S4","S5"]},
  {q:"¿Quién hace el saque inicial?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA","DELANTERO"]},
  {q:"¿Con qué se hace el saque inicial?",type:"option",ans:"PIE",opts:["PIE","MANOS"],icons:true},
- {q:"¿Hacia quién se hace el pase inicial?",type:"option",ans:"MEDIOCAMPISTA",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA"]},
- {q:"El mediocampista recibió la pelota. ¿A quién debe devolvérsela?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","DELANTERO"]},
+ {q:"El delantero hace el pase inicial. ¿A quién se lo pasa?",type:"option",ans:"MEDIOCAMPISTA",opts:["PORTERO","DEFENSA","MEDIOCAMPISTA"]},
+ {q:"El mediocampista recibió la pelota. ¿A quién se la devuelve?",type:"option",ans:"DELANTERO",opts:["PORTERO","DEFENSA","DELANTERO"]},
  {q:"El delantero se acerca a la portería con toques cortos. ¿Qué debe hacer ahora?",type:"option",ans:"👟 ⚽",opts:["👟 ⚽","PASAR","RETROCEDER"]},
  {q:"El portero contrario atrapó la pelota. ¿Quién tiene ahora la pelota?",type:"option",ans:"PORTERO CONTRARIO",opts:["DELANTERO","MEDIOCAMPISTA","PORTERO CONTRARIO"]},
  {q:"El portero atrapó la pelota. ¿Cuál saque debe hacer?",type:"option",ans:"S4",opts:["S3","S4","S5"]},
@@ -1771,8 +1790,8 @@ const finalQuestions=[
 function finalSpeak(t,done){finalLast=t;speak(t,done)}
 function openFinalGame(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}document.getElementById('activity4').style.display='none';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('finalScreen').classList.add('active');resetFinalGame();refreshPlayerIdentity();refreshClubBrand();window.scrollTo(0,0)}
 function goHomeFromFinal(){if(!(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent))){try{speechSynthesis.cancel();}catch(e){}}clearFinalTimers();resetFinalGame();showScreen('menuScreen');window.scrollTo(0,0)}
-function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalFails=0;finalLocked=false;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
-function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;finalFails=0;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
+function resetFinalGame(){clearFinalTimers();hideFinalCue();$('finalOwnForward').style.transform='scaleX(-1)';$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=-1;finalStars=0;finalFails=0;finalLocked=false;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalRound').textContent='—';$('finalQuestion').textContent='Presiona COMENZAR para iniciar el Partido Final';$('finalMsg').textContent='Aquí usarás todo lo que aprendiste.';$('finalOptions').innerHTML='';$('finalCelebration').style.display='none';hideFinalHots();moveFinalBall('49%','47%')}
+function startFinalGame(){clearFinalTimers();hideFinalCue();$('finalOwnForward').style.transform='scaleX(-1)';$('finalOpponentKeeper').style.display='none';$('finalKeeperEight').style.display='none';$('finalOpponentLabel').style.display='none';finalStep=0;finalStars=0;finalFails=0;$('finalStars').textContent='0';$('finalFails').textContent='0';$('finalHistory').style.display='none';$('finalCelebration').style.display='none';moveFinalBall('49%','47%');showFinalQuestion()}
 function repeatFinalQuestion(){if(finalLast)finalSpeak(finalLast)}
 function hideFinalHots(){document.querySelectorAll('.finalHot').forEach(x=>x.style.display='none')}
 function finalLabel(o,z){if(z.icons){if(o==='PIE')return '👟';if(o==='MANOS')return '✋'}return o}
@@ -1780,14 +1799,15 @@ function showFinalQuestion(){hideFinalCue();if(finalStep>=finalQuestions.length)
 function finalPickPlace(v){if(finalStep<0||finalLocked)return;let z=finalQuestions[finalStep];if(z.type!=='place')return;finalAnswer(v)}
 function finalAnswer(v){if(finalLocked)return;let z=finalQuestions[finalStep];if(v!==z.ans){finalLocked=true;finalFails++;$('finalFails').textContent=finalFails;$('finalMsg').textContent='🙂 Esa no es la respuesta correcta. Inténtalo otra vez.';return finalSpeak('Esa no es la respuesta correcta. Inténtalo otra vez.',()=>{finalLocked=false})}finalLocked=true;finalStars++;$('finalStars').textContent=finalStars;$('finalMsg').textContent='⭐ ¡MUY BIEN! ¡CORRECTO!';animateFinalStep(finalStep);finalSpeak('¡Muy bien! ¡Correcto!',()=>advanceFinal(finalStep))}
 function moveFinalBall(l,t,d=900){$('finalBall').style.transitionDuration=d+'ms';$('finalBall').style.left=l;$('finalBall').style.top=t}
-function animateFinalStep(i){if(i===0)moveFinalBall('49%','47%');if(i===4)moveFinalBall('42%','66%');if(i===5)moveFinalBall('67%','42%')}
+function animateFinalStep(i){if(i===0)moveFinalBall('49%','47%');if(i===4)moveFinalBall('44%','68%');if(i===5)moveFinalBall('60%','43%')}
 function nextFinal(delay=650){finalLater(()=>{finalStep++;showFinalQuestion()},delay)}
 function showFinalCue(icon,l,t){let c=$('finalCue');c.textContent=icon;c.style.left=l;c.style.top=t;c.style.display='block'}
 function hideFinalCue(){$('finalCue').style.display='none';$('finalCue').textContent=''}
 function advanceFinal(i){
  if(i===5){
-   $('finalQuestion').textContent='¡El delantero recibió la pelota!';$('finalMsg').textContent='⚽ Mira cómo avanza con varios toques cortos.';
-   setTimeout(()=>moveFinalBall('71%','54%',450),350);setTimeout(()=>moveFinalBall('77%','40%',450),900);setTimeout(()=>moveFinalBall('83%','51%',450),1450);setTimeout(()=>moveFinalBall('86%','47%',450),2000);
+   $('finalOwnForward').style.transform='scaleX(1)';
+   $('finalQuestion').textContent='¡El delantero recibió la pelota!';$('finalMsg').textContent='⚽ Ahora cambia de dirección hacia la portería contraria y avanza con varios toques cortos.';
+   setTimeout(()=>moveFinalBall('68%','54%',450),350);setTimeout(()=>moveFinalBall('77%','40%',450),900);setTimeout(()=>moveFinalBall('83%','51%',450),1450);setTimeout(()=>moveFinalBall('86%','47%',450),2000);
    setTimeout(()=>{finalStep++;showFinalQuestion()},2550);return;
  }
  if(i===6){playGoalThenKeeperCatch();return}
@@ -1929,10 +1949,10 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.87</span></div>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.93</span></div>
 <script src="actualizador.js?v=25.87-r21"></script>
 
-<!-- V25.87 - Una sola voz latina durante todo el juego; inicio iPhone pausado -->
+<!-- V25.93 - S1 V49 aprobado + Partido Final V12 aprobado + ajuste Samsung/Android tablet -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -2056,7 +2076,7 @@ try {
     host.style.display = "block";
 
     if(!frame.getAttribute("src")){
-      frame.setAttribute("src","s1_aprobado_v23.html?embed=1");
+      frame.setAttribute("src","s1_aprobado_v49.html?embed=1");
     }
   }
 
@@ -2082,7 +2102,9 @@ try {
     if(d.type === "s1-height"){
       const frame = document.getElementById("s1IntegratedFrame");
       if(frame && Number(d.height)>0){
-        const newHeight = Math.max(540, Math.min(840, Math.ceil(Number(d.height)) + 4));
+        const isTablet = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) || window.innerWidth <= 1600;
+        const maxH = isTablet ? 1180 : 980;
+        const newHeight = Math.max(620, Math.min(maxH, Math.ceil(Number(d.height)) + 8));
         frame.style.height = newHeight + "px";
       }
     }
@@ -2106,6 +2128,98 @@ try {
     document.body.appendChild(n);
     setTimeout(function(){if(n&&n.parentNode)n.parentNode.removeChild(n);},5000);
   },{once:true});
+})();
+</script>
+
+
+<style id="v2591-tablet-fullscreen-fix">
+/* V25.91 - Samsung/Android tablet: evita que el juego quede reducido a una fracción de la pantalla. */
+@media (min-width:761px) and (max-width:1600px), (hover:none) and (pointer:coarse){
+  body{width:100%!important;max-width:none!important;margin:0!important;overflow-x:hidden!important;}
+  .panel,.campo,#answers,.moveMenu,#movePrompt,#finalField,#finalOptions{
+    width:96vw!important;max-width:none!important;
+  }
+  .menu{width:92vw!important;max-width:1180px!important;}
+  #activity4{width:100%!important;max-width:none!important;padding-left:8px!important;padding-right:8px!important;}
+  #s1IntegratedHost{width:96vw!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important;}
+  #s1IntegratedFrame{width:100%!important;max-width:none!important;min-height:720px!important;}
+  .kickLesson{width:96vw!important;max-width:none!important;}
+}
+@media (min-width:1000px) and (hover:none) and (pointer:coarse){
+  .panel,.campo,#answers,.moveMenu,#movePrompt,#finalField,#finalOptions{width:94vw!important;}
+  .menu{width:86vw!important;}
+  #s1IntegratedHost{width:94vw!important;}
+}
+</style>
+
+
+<!-- V25.93 - Partido Final V12 aprobado integrado como módulo independiente -->
+<style id="v2593-final-v12-integrated-style">
+#finalV12Host{display:none;width:96vw;max-width:1240px;margin:4px auto 70px;padding:0 4px;box-sizing:border-box}
+#finalV12Frame{display:block;width:100%;max-width:none;height:980px;border:0;border-radius:14px;background:#d7f1ff;box-sizing:border-box}
+#finalV12MenuBar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px auto 6px}
+#finalV12MenuBar button{min-height:46px;padding:9px 18px;border:3px solid #222;border-radius:12px;font-weight:900;font-size:16px;background:#ffd84c;color:#111}
+@media (min-width:761px) and (max-width:1600px), (hover:none) and (pointer:coarse){
+  #finalV12Host{width:96vw!important;max-width:none!important;padding-left:4px!important;padding-right:4px!important}
+  #finalV12Frame{width:100%!important;max-width:none!important;height:1120px!important;min-height:820px!important}
+}
+@media (min-width:1000px) and (hover:none) and (pointer:coarse){
+  #finalV12Host{width:94vw!important}
+  #finalV12Frame{height:1080px!important}
+}
+@media (max-width:760px){
+  #finalV12Host{width:100vw!important;max-width:none!important;padding:0!important;margin:0 auto 68px!important}
+  #finalV12Frame{width:100vw!important;max-width:none!important;height:1040px!important;border-radius:0!important}
+}
+</style>
+<script id="v2593-final-v12-integrated-script">
+(function(){
+  function ensureFinalV12Host(){
+    var host=document.getElementById('finalV12Host');
+    if(host)return host;
+    host=document.createElement('div');
+    host.id='finalV12Host';
+    host.innerHTML='<div id="finalV12MenuBar"><button type="button" id="finalV12BackBtn">🏠 MENÚ PRINCIPAL</button></div><iframe id="finalV12Frame" src="partido_final_v12.html" title="Partido Final" scrolling="auto" allow="autoplay"></iframe>';
+    var finalScreen=document.getElementById('finalScreen');
+    if(finalScreen && finalScreen.parentNode){finalScreen.parentNode.insertBefore(host,finalScreen.nextSibling)}
+    else document.body.appendChild(host);
+    var b=document.getElementById('finalV12BackBtn');
+    if(b)b.onclick=function(){
+      try{var f=document.getElementById('finalV12Frame'); if(f&&f.contentWindow)f.contentWindow.speechSynthesis&&f.contentWindow.speechSynthesis.cancel();}catch(e){}
+      host.style.display='none';
+      if(typeof window.goHome==='function')window.goHome();
+      else {
+        document.querySelectorAll('.screen').forEach(function(x){x.classList.remove('active')});
+        var h=document.getElementById('home');if(h)h.classList.add('active');
+        window.scrollTo(0,0);
+      }
+    };
+    return host;
+  }
+
+  window.openFinalGame=function(){
+    try{speechSynthesis.cancel();}catch(e){}
+    var a4=document.getElementById('activity4'); if(a4)a4.style.display='none';
+    document.querySelectorAll('.screen').forEach(function(x){x.classList.remove('active')});
+    var old=document.getElementById('finalScreen'); if(old)old.classList.remove('active');
+    var host=ensureFinalV12Host();
+    host.style.display='block';
+    var f=document.getElementById('finalV12Frame');
+    if(f){
+      // Reinicia el módulo cada vez que se entra al Partido Final para conservar el inicio aprobado.
+      var src=f.getAttribute('src'); f.setAttribute('src',src);
+    }
+    if(typeof window.refreshPlayerIdentity==='function')window.refreshPlayerIdentity();
+    if(typeof window.refreshClubBrand==='function')window.refreshClubBrand();
+    window.scrollTo(0,0);
+  };
+
+  // Al regresar a cualquier otra sección, oculta el módulo independiente.
+  var oldGoHome=window.goHome;
+  if(typeof oldGoHome==='function'){
+    window.goHome=function(){var h=document.getElementById('finalV12Host');if(h)h.style.display='none';return oldGoHome.apply(this,arguments)};
+  }
+  window.addEventListener('load',ensureFinalV12Host,{once:true});
 })();
 </script>
 

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+  <title>Partido final - prueba independiente</title>
+  <style>
+    :root{
+      --blue:#0b4dbb;
+      --sky:#cfefff;
+      --gold:#ffd94a;
+      --green:#24a53d;
+      --card:#fff8d6;
+      --ink:#14336d;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--sky);
+      color: var(--ink);
+    }
+    .app{
+      width:min(96vw,1100px);
+      margin:12px auto 18px;
+    }
+    .title{
+      text-align:center;
+      font-weight:900;
+      font-size:clamp(28px,3vw,44px);
+      color:#123ea6;
+      text-shadow:1px 1px 0 #fff;
+      margin:8px 0 6px;
+    }
+    .subtitle{
+      text-align:center;
+      font-size:clamp(15px,1.8vw,22px);
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .instruction{
+      background:#fff0a6;
+      border:3px solid #a07a00;
+      border-radius:18px;
+      padding:10px 14px;
+      text-align:center;
+      font-weight:900;
+      font-size:clamp(16px,1.9vw,24px);
+      margin-bottom:10px;
+    }
+    .card{
+      background:#fff;
+      border:3px solid #2c2c2c;
+      border-radius:24px;
+      padding:12px;
+      box-shadow:0 2px 0 rgba(0,0,0,.16);
+    }
+    .field-wrap{position:relative}
+    .field{
+      position:relative;
+      width:100%;
+      aspect-ratio: 16 / 9;
+      overflow:hidden;
+      border-radius:16px;
+      background:url('campo_aprobado.png') center/cover no-repeat;
+      border:4px solid #e2f5ff;
+    }
+    .player, .ball, .referee, .label-tag, .arrow, .status-badge{position:absolute; z-index:3}
+    .player img, .referee img, .ball img{display:block; width:100%; height:100%; object-fit:contain}
+    .player{width:13%; transition:left .8s ease, top .8s ease, transform .8s ease, opacity .5s ease}
+    .gk{width:14%}
+    .ball{width:4.8%; transition:left .8s ease, top .8s ease, transform .8s ease}
+    .referee{width:10%; opacity:0; transition:opacity .5s ease, left .8s ease, top .8s ease}
+    .hidden{opacity:0 !important}
+    .flip{transform:scaleX(-1)}
+    .label-tag{
+      background:#fff;
+      border:2px solid #1d8c35;
+      color:#0d7b2b;
+      font-weight:900;
+      font-size:clamp(12px,1.1vw,18px);
+      padding:3px 10px;
+      border-radius:10px;
+      white-space:nowrap;
+      z-index:5;
+      transform:translateX(-50%);
+    }
+    .arrow{
+      height:10px;
+      background:#ffd43b;
+      border-radius:999px;
+      transform-origin:left center;
+      opacity:0;
+      transition:opacity .35s ease;
+      z-index:2;
+    }
+    .arrow::after{
+      content:'';
+      position:absolute;
+      right:-18px;
+      top:-9px;
+      border-left:20px solid #ffd43b;
+      border-top:14px solid transparent;
+      border-bottom:14px solid transparent;
+    }
+    .status-badge{
+      top:10px;
+      left:50%;
+      transform:translateX(-50%);
+      background:#eaffef;
+      border:2px solid #4caf50;
+      border-radius:12px;
+      padding:6px 12px;
+      font-weight:900;
+      color:#16853a;
+      opacity:0;
+      transition:opacity .4s ease;
+      z-index:8;
+    }
+    .controls{
+      margin-top:12px;
+      background:var(--card);
+      border:3px solid #d6a400;
+      border-radius:20px;
+      padding:14px 12px 16px;
+      text-align:center;
+    }
+    .status-text{
+      min-height:56px;
+      font-size:clamp(18px,2vw,28px);
+      font-weight:900;
+      color:#1544b0;
+      margin-bottom:6px;
+    }
+    .mini{
+      font-size:clamp(13px,1.25vw,18px);
+      font-weight:700;
+      color:#2b5e9d;
+      margin-bottom:12px;
+    }
+    .buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+    }
+    button{
+      cursor:pointer;
+      border:3px solid #1e1e1e;
+      border-radius:16px;
+      padding:12px 18px;
+      font-size:clamp(16px,1.6vw,22px);
+      font-weight:900;
+      min-width:190px;
+      box-shadow:0 2px 0 rgba(0,0,0,.18);
+    }
+    .btn-start{background:var(--gold)}
+    .btn-repeat{background:#5fd46d}
+    .btn-listen{background:#49b7ff}
+    .btn-reset{background:#fff}
+    .progress{
+      margin-top:12px;
+      font-size:clamp(14px,1.3vw,18px);
+      font-weight:900;
+    }
+    .dots{display:flex; justify-content:center; gap:8px; margin-top:8px}
+    .dot{width:14px;height:14px;border-radius:50%;border:2px solid #4970d3;background:#fff}
+    .dot.on{background:#22b14c}
+    .note{
+      margin-top:10px;
+      font-size:clamp(13px,1.2vw,17px);
+      font-weight:700;
+      color:#28508f;
+    }
+    @media (max-width: 900px){
+      .player{width:15%}
+      .gk{width:16%}
+      .referee{width:12%}
+      .ball{width:6%}
+      button{min-width:160px}
+    }
+    @media (max-width: 640px){
+      .app{width:98vw}
+      .card{padding:8px}
+      .controls{padding:10px 8px 14px}
+      .player{width:16%}
+      .gk{width:18%}
+      .referee{width:14%}
+      .ball{width:7%}
+      .label-tag{font-size:12px;padding:2px 7px}
+      button{min-width:140px;padding:10px 12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="title">PARTIDO FINAL — PRUEBA INDEPENDIENTE</div>
+    <div class="subtitle">Revisamos la jugada final paso a paso, con <b>un solo balón</b>.</div>
+    <div class="instruction">👆 Toca el botón amarillo <b>VER DEMOSTRACIÓN</b> para comenzar.</div>
+
+    <div class="card">
+      <div class="field-wrap">
+        <div class="field" id="field">
+          <div class="status-badge" id="statusBadge">¡Muy bien!</div>
+
+          <div class="player gk" id="gk"><img src="portero.png" alt="Portero"></div>
+          <div class="player" id="def"><img src="defensa.png" alt="Defensa"></div>
+          <div class="player" id="mid"><img src="mediocampista.png" alt="Mediocampista"></div>
+          <div class="player" id="fwd"><img src="delantero.png" alt="Delantero"></div>
+          <div class="referee" id="ref"><img src="/mnt/data/referee_whistle_transparent.png" alt="Árbitro"></div>
+          <div class="ball" id="ball"><img src="balon_seccion4.png" alt="Balón"></div>
+
+          <div class="label-tag" id="tag-gk">PORTERO</div>
+          <div class="label-tag" id="tag-def">DEFENSA</div>
+          <div class="label-tag" id="tag-mid">MEDIO</div>
+          <div class="label-tag" id="tag-fwd">DELANTERO</div>
+
+          <div class="arrow" id="arrow1"></div>
+          <div class="arrow" id="arrow2"></div>
+          <div class="arrow" id="arrow3"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="status-text" id="statusText">Toca el botón amarillo para ver la demostración.</div>
+        <div class="mini" id="miniText">Primero aparece la posición inicial; después se ve el pase del delantero al mediocampista, el regreso al delantero y la continuación hacia la portería contraria.</div>
+        <div class="buttons">
+          <button class="btn-start" id="btnStart">▶ VER DEMOSTRACIÓN</button>
+          <button class="btn-listen" id="btnListen">🔊 ESCUCHAR</button>
+          <button class="btn-repeat" id="btnRepeat">↻ REPETIR</button>
+          <button class="btn-reset" id="btnReset">← REINICIAR</button>
+        </div>
+        <div class="progress" id="progress">Paso 0 de 5</div>
+        <div class="dots">
+          <div class="dot" id="d1"></div>
+          <div class="dot" id="d2"></div>
+          <div class="dot" id="d3"></div>
+          <div class="dot" id="d4"></div>
+          <div class="dot" id="d5"></div>
+        </div>
+        <div class="note">Esta es una prueba aparte para corregir bien el partido final antes de integrarlo al código principal.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const gk = document.getElementById('gk');
+  const def = document.getElementById('def');
+  const mid = document.getElementById('mid');
+  const fwd = document.getElementById('fwd');
+  const ref = document.getElementById('ref');
+  const ball = document.getElementById('ball');
+  const statusText = document.getElementById('statusText');
+  const miniText = document.getElementById('miniText');
+  const progress = document.getElementById('progress');
+  const badge = document.getElementById('statusBadge');
+  const btnStart = document.getElementById('btnStart');
+  const btnRepeat = document.getElementById('btnRepeat');
+  const btnReset = document.getElementById('btnReset');
+  const btnListen = document.getElementById('btnListen');
+  const tags = {
+    gk: document.getElementById('tag-gk'),
+    def: document.getElementById('tag-def'),
+    mid: document.getElementById('tag-mid'),
+    fwd: document.getElementById('tag-fwd')
+  };
+  const arrows = [document.getElementById('arrow1'), document.getElementById('arrow2'), document.getElementById('arrow3')];
+  const dots = [1,2,3,4,5].map(n => document.getElementById('d'+n));
+
+  let running = false;
+  let currentStep = 0;
+  let currentUtterance = null;
+
+  const wait = (ms) => new Promise(res => setTimeout(res, ms));
+
+  function setPos(el, left, top){
+    el.style.left = left + '%';
+    el.style.top = top + '%';
+  }
+  function setTag(tag, left, top){
+    tag.style.left = left + '%';
+    tag.style.top = top + '%';
+  }
+  function placeArrow(el, x1, y1, x2, y2){
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    el.style.left = x1 + '%';
+    el.style.top = y1 + '%';
+    el.style.width = len + '%';
+    el.style.transform = `rotate(${angle}deg)`;
+  }
+  function hideArrows(){ arrows.forEach(a => a.style.opacity = 0); }
+  function setStep(n){
+    currentStep = n;
+    progress.textContent = `Paso ${n} de 5`;
+    dots.forEach((d,i)=>d.classList.toggle('on', i < n));
+  }
+  function speak(text){
+    return new Promise(resolve => {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      currentUtterance = u;
+      u.lang = 'es-US';
+      u.rate = 0.92;
+      u.pitch = 1.0;
+      u.onend = () => resolve();
+      u.onerror = () => resolve();
+      window.speechSynthesis.speak(u);
+    });
+  }
+  function listenCurrent(){
+    if(statusText.textContent){
+      speak(statusText.textContent + '. ' + miniText.textContent);
+    }
+  }
+
+  function resetScene(){
+    running = false;
+    window.speechSynthesis.cancel();
+    hideArrows();
+    badge.style.opacity = 0;
+    ref.style.opacity = 0;
+    gk.classList.remove('flip');
+    def.classList.remove('flip');
+    mid.classList.remove('flip');
+    fwd.classList.remove('flip');
+
+    // Posiciones iniciales
+    setPos(gk, 2.5, 52);
+    setPos(def, 23, 58);
+    setPos(mid, 34, 50);
+    setPos(fwd, 45.5, 40.5);
+    setPos(ball, 50.2, 49.5);
+
+    // Orientaciones: todos según su media cancha a la izquierda.
+    gk.classList.add('flip');
+    def.classList.add('flip');
+    mid.classList.add('flip');
+    fwd.classList.add('flip');
+
+    // Árbitro cerca del centro, pero aparte.
+    setPos(ref, 58.5, 29);
+
+    // Etiquetas
+    setTag(tags.gk, 8.5, 71.5);
+    setTag(tags.def, 29.5, 83.5);
+    setTag(tags.mid, 39.5, 74.5);
+    setTag(tags.fwd, 51.2, 30.8);
+
+    statusText.textContent = 'Toca el botón amarillo para ver la demostración.';
+    miniText.textContent = 'Primero aparece la posición inicial; después se ve el pase del delantero al mediocampista, el regreso al delantero y la continuación hacia la portería contraria.';
+    setStep(0);
+  }
+
+  async function demo(){
+    if(running) return;
+    running = true;
+    btnStart.disabled = true;
+    btnRepeat.disabled = true;
+    btnReset.disabled = true;
+    btnListen.disabled = true;
+
+    resetScene();
+    running = true;
+    btnStart.disabled = true;
+    btnRepeat.disabled = true;
+    btnReset.disabled = true;
+    btnListen.disabled = true;
+
+    // Paso 1
+    setStep(1);
+    ref.style.opacity = 1;
+    statusText.textContent = 'Paso 1. Todos están listos en su cancha y el árbitro da la señal.';
+    miniText.textContent = 'El portero se queda en su portería. El defensa, el medio y el delantero están acomodados en su lado de la cancha.';
+    await speak(statusText.textContent + ' ' + miniText.textContent);
+    await wait(300);
+
+    // Paso 2: delantero pasa al medio
+    setStep(2);
+    placeArrow(arrows[0], 50.2, 47.8, 39.3, 56.5);
+    arrows[0].style.opacity = 1;
+    statusText.textContent = 'Paso 2. El delantero le pasa el balón al mediocampista.';
+    miniText.textContent = 'El balón sale desde el centro y va hacia el medio, siempre en su lado de la cancha.';
+    await speak(statusText.textContent + ' ' + miniText.textContent);
+    setPos(ball, 38.7, 58);
+    await wait(850);
+
+    // Paso 3: medio devuelve al delantero
+    setStep(3);
+    placeArrow(arrows[1], 39.7, 57, 48.8, 44.5);
+    arrows[1].style.opacity = 1;
+    statusText.textContent = 'Paso 3. El mediocampista devuelve el balón al delantero.';
+    miniText.textContent = 'Ahora el delantero recibe otra vez y se prepara para cambiar de dirección.';
+    await speak(statusText.textContent + ' ' + miniText.textContent);
+    setPos(ball, 48.8, 45.5);
+    await wait(850);
+
+    // Paso 4: delantero cambia de dirección
+    setStep(4);
+    fwd.classList.remove('flip');
+    setPos(fwd, 47.2, 40.5);
+    setTag(tags.fwd, 53.2, 30.8);
+    statusText.textContent = 'Paso 4. Cuando recibe, el delantero cambia de dirección hacia la portería contraria.';
+    miniText.textContent = 'Ahora el delantero ya mira hacia adelante para continuar la jugada final.';
+    await speak(statusText.textContent + ' ' + miniText.textContent);
+    await wait(450);
+
+    // Paso 5: continuidad final
+    setStep(5);
+    placeArrow(arrows[2], 51.8, 46.2, 72, 40.8);
+    arrows[2].style.opacity = 1;
+    statusText.textContent = 'Paso 5. El delantero sigue la jugada hacia la portería contraria.';
+    miniText.textContent = 'Aquí termina esta prueba independiente del partido final.';
+    await speak(statusText.textContent + ' ' + miniText.textContent);
+    setPos(ball, 67.5, 42.5);
+    await wait(900);
+
+    badge.textContent = '¡Excelente!';
+    badge.style.opacity = 1;
+
+    btnStart.disabled = false;
+    btnRepeat.disabled = false;
+    btnReset.disabled = false;
+    btnListen.disabled = false;
+    running = false;
+  }
+
+  btnStart.addEventListener('click', demo);
+  btnRepeat.addEventListener('click', demo);
+  btnReset.addEventListener('click', resetScene);
+  btnListen.addEventListener('click', listenCurrent);
+
+  resetScene();
+})();
+</script>
+</body>
+</html>
