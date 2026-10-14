@@ -7,8 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
 <title>Mi Juego de Fútbol</title>
+<script>window.APP_VERSION="25.100";</script>
 
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest?v=25.100">
 <meta name="theme-color" content="#c9efff">
 <meta name="apple-mobile-web-app-title" content="Mi Fútbol Club">
 <link rel="apple-touch-icon" href="mi-futbol-club-icon-192.png">
@@ -1892,12 +1893,29 @@ function restartFinalCelebration(){$('finalCelebration').style.display='block';f
 })();
 </script>
 
-<script>
+<script id="v25100-service-worker-register">
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
-      console.log('Service Worker:', err);
+    var reloadingForNewSW = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(reloadingForNewSW) return;
+      reloadingForNewSW = true;
+      window.location.reload();
     });
+    navigator.serviceWorker.register('./service-worker.js?v=25.100', {updateViaCache:'none'})
+      .then(function(reg){
+        try{ reg.update(); }catch(e){}
+        if(reg.waiting){ try{reg.waiting.postMessage({type:'SKIP_WAITING'});}catch(e){} }
+        reg.addEventListener('updatefound', function(){
+          var w=reg.installing; if(!w) return;
+          w.addEventListener('statechange', function(){
+            if(w.state==='installed' && navigator.serviceWorker.controller){
+              try{w.postMessage({type:'SKIP_WAITING'});}catch(e){}
+            }
+          });
+        });
+      })
+      .catch(function (err) { console.log('Service Worker:', err); });
   });
 }
 </script>
@@ -1946,13 +1964,13 @@ try {
 
 <style id="v2567-family-credit-style">
   body{padding-bottom:42px !important;}
-  #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 13px/1.25 Arial,sans-serif;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
-  @media(max-width:600px){#familyCredit{font-size:11px;padding-left:6px;padding-right:6px;} body{padding-bottom:50px !important;}}
+  #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 17px/1.3 Arial,sans-serif;padding:9px 10px calc(9px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
+  @media(max-width:600px){#familyCredit{font-size:15px;padding-left:6px;padding-right:6px;} body{padding-bottom:54px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.97</span></div>
-<script src="actualizador.js?v=25.87-r21"></script>
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.100</span></div>
+<script src="actualizador.js?v=25.100"></script>
 
-<!-- V25.97 - S1 V49 aprobado + Partido Final V12 aprobado + ajuste Samsung/Android tablet -->
+<!-- V25.100 - S1 V49 aprobado + Partido Final V12 aprobado + ajuste Samsung/Android tablet -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -2013,10 +2031,17 @@ try {
    u.voice=bairoaVoice || selectBairoaVoice();
    u.lang=(u.voice&&u.voice.lang)||'es-US';
    const isiPhoneIPad=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+   const isAndroidMobile=/Android/i.test(navigator.userAgent);
    u.rate=isiPhoneIPad?.40:.78;u.pitch=1.08;
    let advanced=false;
-   const advance=()=>{if(advanced||token!==v2578SpeechToken)return;advanced=true;setTimeout(next,120)};
+   let fallbackTimer=null;
+   const advance=()=>{if(advanced||token!==v2578SpeechToken)return;advanced=true;if(fallbackTimer)clearTimeout(fallbackTimer);setTimeout(next,120)};
    u.onend=advance;u.onerror=advance;
+   // Safari/iPhone puede reproducir la frase completa sin disparar onend.
+   // Este respaldo evita que la bienvenida se congele después de hablar.
+   const spokenText=parts[i-1]||'';
+   const fallbackMs=Math.min(22000,Math.max(4200,spokenText.length*(isiPhoneIPad?180:(isAndroidMobile?105:90))));
+   fallbackTimer=setTimeout(advance,fallbackMs);
    speechSynthesis.speak(u);
   };
   setTimeout(next,80);
@@ -2031,7 +2056,32 @@ try {
  save();updateGame();speak('¡Excelente, '+data.name+'! Tu club es '+data.club+' y tu número es '+data.number+'. ¡Comencemos!',()=>{const o=$('v2571Overlay');if(o)o.remove()})}
  function ask(field){const prompts={club:'Escribe el nombre que quieres ponerle a tu club.',name:'Ahora escribe tu nombre.',number:'Ahora escribe tu número en el equipo.'};$('v2571Content').innerHTML='<p id="v2571Prompt">'+prompts[field]+'</p><input id="v2571Input" '+(field==='number'?'inputmode="numeric" pattern="[0-9]*"':'')+' autocomplete="off"><br><button class="v2571Btn v2571Next" id="v2571Next">🔊 CONFIRMAR</button>';const inp=$('v2571Input');inp.focus();inp.addEventListener('input',()=>{inp.value=field==='number'?inp.value.replace(/\D/g,''):inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ0-9 \-]/g,'')});$('v2571Next').onclick=()=>{const v=inp.value.trim();if(!v){speak(prompts[field]);return}confirmField(field,v)};speak(prompts[field])}
  function confirmField(field,v){const q={club:'Escribiste '+v+' como nombre de tu club. ¿Está correcto?',name:'Tu nombre es '+v+'. ¿Está correcto?',number:'Tu número en el equipo es '+v+'. ¿Está correcto?'}[field];const t=q+' Presiona el botón verde que dice Sí si está correcto. Presiona el botón amarillo que dice No si quieres cambiarlo.';$('v2571Content').innerHTML='<p id="v2571Prompt">'+esc(q)+'</p><button class="v2571Btn v2571Yes" id="v2571Yes">✅ SÍ</button><button class="v2571Btn v2571No" id="v2571No">❌ NO</button>';speak(t);$('v2571Yes').onclick=()=>{data[field]=v;if(field==='club')ask('name');else if(field==='name')ask('number');else finish()};$('v2571No').onclick=()=>speak('Está bien. Escríbelo nuevamente.',()=>ask(field))}
- function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak(t,()=>{$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}})}}else{$('v2571Content').innerHTML='<p><b>Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</b></p><p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p><p><b>🏆 ¡COMENCEMOS!</b></p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){this.disabled=true;this.textContent='🔊 ESCUCHANDO...';speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',()=>ask('club'))}}}
+ function begin(){const old=saved();if(old&&old.club&&old.name&&old.number){data=old;const t='La última vez jugaste con el club '+data.club+'. Tu nombre es '+data.name+' y tu número es '+data.number+'. ¿Quieres continuar con estos datos? Si los datos están correctos, presiona el botón verde que dice Sí, continuar. Si quieres cambiarlos, presiona el botón amarillo que dice No, cambiar.';const choices='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>¿Quieres continuar con estos datos?</p><button class="v2571Btn v2571Yes" id="v2571Keep">✅ SÍ, CONTINUAR</button><button class="v2571Btn v2571No" id="v2571Change">✏️ NO, CAMBIAR</button>';$('v2571Content').innerHTML='<div id="v2571Saved"><b>CLUB:</b> '+esc(data.club)+'<br><b>NOMBRE:</b> '+esc(data.name)+'<br><b>NÚMERO:</b> '+esc(data.number)+'</div><p>Primero escucha la instrucción.</p><button class="v2571Btn v2571Yes" id="v2571Listen">🔊 ESCUCHAR INSTRUCCIÓN</button>';$('v2571Listen').onclick=function(){
+ const btn=this;
+ const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&(navigator.maxTouchPoints||0)>1);
+ const isAndroid=/Android/i.test(navigator.userAgent);
+ const isMobileTouch=(isiOS||isAndroid)&&((navigator.maxTouchPoints||0)>0);
+ let advanced=false;
+ const go=()=>{if(advanced)return;advanced=true;$('v2571Content').innerHTML=choices;$('v2571Keep').onclick=finish;$('v2571Change').onclick=()=>{data={club:'',name:'',number:''};ask('club')}};
+ btn.disabled=true;btn.textContent='🔊 ESCUCHANDO...';
+ if(isMobileTouch){setTimeout(()=>{if(advanced||!btn.isConnected)return;btn.disabled=false;btn.textContent='▶ CONTINUAR';btn.onclick=go},1400);setTimeout(go,45000)}
+ speak(t,go)
+}}else{$('v2571Content').innerHTML='<p><b>Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador.</b></p><p>Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan.</p><p><b>🏆 ¡COMENCEMOS!</b></p><button class="v2571Btn v2571Yes" id="v2571Start">🔊 ESCUCHAR Y COMENZAR</button>';$('v2571Start').onclick=function(){
+ const btn=this;
+ const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&(navigator.maxTouchPoints||0)>1);
+ const isAndroid=/Android/i.test(navigator.userAgent);
+ const isMobileTouch=(isiOS||isAndroid)&&((navigator.maxTouchPoints||0)>0);
+ let advanced=false;
+ const go=()=>{if(advanced)return;advanced=true;ask('club')};
+ btn.disabled=true;btn.textContent='🔊 ESCUCHANDO...';
+ if(isMobileTouch){
+   // V25.100: iPhone/iPad y Android/Samsung pueden reproducir la bienvenida sin avisar onend.
+   // Se habilita una salida manual independiente; PC y Kindle no cambian.
+   setTimeout(()=>{if(advanced||!btn.isConnected)return;btn.disabled=false;btn.textContent='▶ CONTINUAR';btn.onclick=go},1400);
+   setTimeout(go,45000);
+ }
+ speak('¡Bienvenido a tu juego de fútbol! Este juego no sustituye las instrucciones ni las enseñanzas de tu entrenador. Está diseñado para complementar lo que aprendes con él y ayudarte a memorizar de una manera más fácil y divertida todo lo que te enseñan. ¡Comencemos!',go)
+}}}
  if(/Silk\//i.test(navigator.userAgent)||/Kindle|KF[A-Z]{2,}/i.test(navigator.userAgent)){
    window.addEventListener('load',function(){
      try{begin();}
@@ -2076,7 +2126,7 @@ try {
     host.style.display = "block";
 
     if(!frame.getAttribute("src")){
-      frame.setAttribute("src","s1_aprobado_v49.html?embed=1");
+      frame.setAttribute("src","s1_aprobado_v49.html?embed=1&v=25.100");
     }
   }
 
@@ -2153,7 +2203,7 @@ try {
 </style>
 
 
-<!-- V25.97 - Partido Final V12 aprobado integrado como módulo independiente -->
+<!-- V25.100 - Partido Final V12 aprobado integrado como módulo independiente -->
 <style id="v2593-final-v12-integrated-style">
 #finalV12Host{display:none;width:96vw;max-width:1240px;margin:4px auto 70px;padding:0 4px;box-sizing:border-box}
 #finalV12Frame{display:block;width:100%;max-width:none;height:980px;border:0;border-radius:14px;background:#d7f1ff;box-sizing:border-box}
@@ -2179,7 +2229,7 @@ try {
     if(host)return host;
     host=document.createElement('div');
     host.id='finalV12Host';
-    host.innerHTML='<div id="finalV12MenuBar"><button type="button" id="finalV12BackBtn">🏠 MENÚ PRINCIPAL</button></div><iframe id="finalV12Frame" src="partido_final_v12.html" title="Partido Final" scrolling="auto" allow="autoplay"></iframe>';
+    host.innerHTML='<iframe id="finalV12Frame" src="partido_final_v12.html?v=25.100" title="Partido Final" scrolling="auto" allow="autoplay"></iframe><div id="finalV12MenuBar"><button type="button" id="finalV12BackBtn">🏠 MENÚ PRINCIPAL</button></div>';
     var finalScreen=document.getElementById('finalScreen');
     if(finalScreen && finalScreen.parentNode){finalScreen.parentNode.insertBefore(host,finalScreen.nextSibling)}
     else document.body.appendChild(host);
@@ -2222,6 +2272,72 @@ try {
   window.addEventListener('load',ensureFinalV12Host,{once:true});
 })();
 </script>
+
+
+<!-- V25.100 - perfiles independientes por dispositivo -->
+<script id="v2598-device-profiles-script">
+(function(){
+  function classifyDevice(){
+    var ua=navigator.userAgent||'';
+    var platform=navigator.platform||'';
+    var touch=(navigator.maxTouchPoints||0)>0;
+    var root=document.documentElement;
+    var names=['device-pc','device-windows-touch','device-chromebook','device-android-phone','device-android-tablet','device-iphone','device-ipad','device-kindle','device-generic','device-samsung-tablet'];
+    names.forEach(function(c){root.classList.remove(c)});
+    var kind='device-generic';
+    if(/Silk\//i.test(ua)||/Kindle|KF[A-Z]{2,}/i.test(ua)) kind='device-kindle';
+    else if(/iPhone|iPod/i.test(ua)) kind='device-iphone';
+    else if(/iPad/i.test(ua)||(platform==='MacIntel'&&(navigator.maxTouchPoints||0)>1)) kind='device-ipad';
+    else if(/Android/i.test(ua)){
+      var tablet=!/Mobile/i.test(ua)||Math.min(screen.width||0,screen.height||0)>=600;
+      kind=tablet?'device-android-tablet':'device-android-phone';
+      if(tablet&&(/SM-T|SM-X|SamsungBrowser/i.test(ua)))root.classList.add('device-samsung-tablet');
+    }
+    else if(/CrOS/i.test(ua)) kind='device-chromebook';
+    else if(/Windows/i.test(ua)&&touch) kind='device-windows-touch';
+    else if(/Windows|Macintosh|X11|Linux/i.test(ua)) kind='device-pc';
+    root.classList.add(kind);
+    root.setAttribute('data-device-profile',kind.replace('device-',''));
+  }
+  classifyDevice();
+  window.addEventListener('resize',classifyDevice,{passive:true});
+})();
+</script>
+<style id="v2598-device-profiles-style">
+/* Cada bloque modifica solamente su familia de dispositivo. PC queda con la escala aprobada de V25.97. */
+html.device-android-tablet h1{font-size:clamp(38px,4.8vw,56px)!important}
+html.device-android-tablet .menu{width:98vw!important;max-width:none!important}
+html.device-android-tablet .menuBtn{font-size:clamp(27px,3.2vw,38px)!important;padding:21px 16px!important;min-height:78px!important}
+html.device-android-tablet .panel{width:99vw!important;max-width:none!important;padding:14px!important}
+html.device-android-tablet .score{font-size:22px!important;padding:10px 15px!important}
+html.device-android-tablet .inst{font-size:24px!important;padding:12px!important}
+html.device-android-tablet .msg{font-size:21px!important;padding:10px!important}
+html.device-android-tablet .controls button{font-size:20px!important;padding:14px 18px!important;min-height:58px!important}
+html.device-android-tablet .answer,html.device-android-tablet .finalOption{font-size:22px!important;padding:14px 20px!important}
+html.device-android-tablet .kickTabs button{font-size:20px!important;min-width:136px!important;padding:13px 14px!important}
+html.device-android-tablet #activity4 .kickLesson{width:98vw!important;max-width:none!important}
+html.device-android-tablet #activity4 .miniField{width:98vw!important;max-width:none!important}
+html.device-android-tablet #s1IntegratedHost{width:98vw!important;max-width:none!important}
+html.device-android-tablet #s1IntegratedFrame{min-height:980px!important}
+html.device-android-tablet #finalV12Host{width:98vw!important;max-width:none!important}
+html.device-android-tablet #finalV12Frame{height:1360px!important}
+html.device-android-tablet #finalV12MenuBar button{font-size:22px!important;min-height:60px!important;padding:14px 24px!important}
+
+html.device-samsung-tablet .clubBrand .coach{font-size:18px!important}
+html.device-samsung-tablet .playerIdentity{font-size:18px!important}
+
+html.device-android-phone .menuBtn{font-size:18px!important}
+html.device-iphone .menuBtn{font-size:18px!important}
+html.device-ipad .menuBtn{font-size:22px!important}
+html.device-ipad .panel{width:96vw!important}
+html.device-kindle .menuBtn{font-size:21px!important}
+html.device-kindle #s1IntegratedFrame{min-height:780px!important}
+html.device-windows-touch .menuBtn{font-size:22px!important}
+html.device-chromebook .menuBtn{font-size:21px!important}
+
+#familyCredit{font-size:17px!important}
+@media(max-width:600px){#familyCredit{font-size:15px!important}}
+</style>
 
 </body></html>
 <style>

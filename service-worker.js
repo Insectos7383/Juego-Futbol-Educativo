@@ -1,78 +1,77 @@
-const CACHE_NAME = 'mi-futbol-club-v25-87-r21';
-
-const APP_ASSETS = [
-  "./",
-  "./index.html",
-  "./s1_aprobado_v23.html",
-  "./actualizador.js",
-  "./version.json",
-  "./manifest.webmanifest",
-  "./mi_futbol_club_logo.png",
-  "./balon_seccion4.png",
-  "./campo_aprobado.png",
-  "./campo_lecciones_limpio.png",
-  "./campo_saques_sin_balon.jpg",
-  "./defensa.png",
-  "./delantero.png",
-  "./mediocampista.png",
-  "./portero.png",
-  "./mi-futbol-club-icon-192.png",
-  "./mi-futbol-club-icon-512.png"
+/* MI FUTBOL CLUB - Service Worker V25.100 */
+const APP_VERSION = '25.100';
+const CACHE_NAME = 'mi-futbol-club-v' + APP_VERSION;
+const CORE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './version.json',
+  './actualizador.js',
+  './balon_seccion4.png',
+  './campo_aprobado.png',
+  './campo_lecciones_limpio.png',
+  './campo_saques_sin_balon.jpg',
+  './defensa.png',
+  './delantero.png',
+  './mediocampista.png',
+  './portero.png',
+  './mi_futbol_club_logo.png',
+  './mi-futbol-club-icon-192.png',
+  './mi-futbol-club-icon-512.png',
+  './s1_aprobado_v49.html',
+  './partido_final_v12.html'
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_ASSETS))
-  );
   self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE)).catch(()=>{}));
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async()=>{
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => k === CACHE_NAME ? Promise.resolve() : caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if(event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-
+  if(event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  const isFreshCritical =
-    url.pathname.endsWith('/index.html') ||
-    url.pathname.endsWith('/actualizador.js') ||
-    url.pathname.endsWith('/version.json') ||
-    url.pathname.endsWith('/service-worker.js') ||
-    url.pathname.endsWith('/s1_aprobado_v23.html');
+  if(url.origin !== self.location.origin) return;
 
-  if (isFreshCritical) {
-    event.respondWith(
-      fetch(event.request, {cache:'no-store'})
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(event.request).then(r => r || caches.match('./index.html')))
-    );
+  const isNavigation = event.request.mode === 'navigate';
+  const alwaysFresh = isNavigation || /(?:index\.html|version\.json|actualizador\.js|manifest\.webmanifest)$/i.test(url.pathname);
+
+  if(alwaysFresh){
+    event.respondWith((async()=>{
+      try{
+        const fresh = await fetch(event.request, {cache:'no-store'});
+        if(fresh && fresh.ok){
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, fresh.clone()).catch(()=>{});
+        }
+        return fresh;
+      }catch(e){
+        return (await caches.match(event.request)) || (await caches.match('./index.html'));
+      }
+    })());
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cached =>
-      cached ||
-      fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        return response;
-      }).catch(() => caches.match('./index.html'))
-    )
-  );
+  event.respondWith((async()=>{
+    const cached = await caches.match(event.request);
+    const network = fetch(event.request, {cache:'no-cache'}).then(async fresh=>{
+      if(fresh && fresh.ok){
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, fresh.clone()).catch(()=>{});
+      }
+      return fresh;
+    }).catch(()=>null);
+    return cached || (await network) || Response.error();
+  })());
 });

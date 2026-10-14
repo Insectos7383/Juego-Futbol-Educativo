@@ -519,8 +519,11 @@ body.s1-embedded .overlay-card{
     }
     u.rate = isiPhoneIPad ? 0.40 : 0.78;
     u.pitch = 1.08;
-    u.onend = () => setTimeout(callback, pauseAfter);
-    u.onerror = () => setTimeout(callback, pauseAfter);
+    let completed=false;
+    const finishSpeech=()=>{if(completed)return;completed=true;clearTimeout(watchdog);setTimeout(callback,pauseAfter)};
+    u.onend=finishSpeech;
+    u.onerror=finishSpeech;
+    const watchdog=setTimeout(finishSpeech,Math.min(48000,Math.max(9000,3000+String(text||'').length*(isiPhoneIPad?260:165))));
     speechSynthesis.speak(u);
   }
 
@@ -1044,13 +1047,13 @@ body.s1-embedded .overlay-card{
                 updateSideClubName();
                 setFeedback("¡Excelente! Demostración completada.","good");
                 if(btn){ btn.classList.remove('demo-lock'); btn.textContent='↻ REPETIR DEMOSTRACIÓN'; }
-              },650);
+              },1200);
 
-            },650);
-          },650);
-        },650);
-      },650);
-    },650);
+            },1200);
+          },1200);
+        },1200);
+      },1200);
+    },1200);
   }
 
   function renderRules(){
@@ -1199,5 +1202,21 @@ body.s1-embedded .overlay-card{
 })();
 </script>
 
+
+<style id="v2599-s1-device-isolation">
+html.device-samsung-tablet #app{width:100%;max-width:none;padding:10px}
+html.device-samsung-tablet .title{font-size:40px}
+html.device-samsung-tablet .score{font-size:22px;padding:12px 16px}
+html.device-samsung-tablet .tab{font-size:20px;min-width:136px;padding:12px 16px}
+html.device-samsung-tablet .panel h2{font-size:31px}
+html.device-samsung-tablet .question{font-size:29px}
+html.device-samsung-tablet .helper{font-size:19px}
+html.device-samsung-tablet .answer{font-size:21px;min-height:68px}
+html.device-samsung-tablet .badge{font-size:20px}
+html.device-samsung-tablet .qa{padding:16px}
+</style>
+<script id="v2599-s1-device-script">
+(function(){var ua=navigator.userAgent||'';if(/Android/i.test(ua)&&(!/Mobile/i.test(ua)||Math.min(screen.width||0,screen.height||0)>=600)&&(/SM-T|SM-X|SamsungBrowser/i.test(ua)))document.documentElement.classList.add('device-samsung-tablet');})();
+</script>
 </body>
 </html>

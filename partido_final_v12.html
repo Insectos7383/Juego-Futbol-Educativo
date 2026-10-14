@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
-<title>Partido Final V12 - Delantero restaurado y gol final</title>
+<title>Partido Final V12 - V25.98</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#d7f1ff;font-family:Arial,Helvetica,sans-serif;color:#0b3c91}
@@ -31,6 +31,18 @@ h1{margin:4px 0;font-size:clamp(25px,3.2vw,44px)}
 .goal{display:none;font-size:clamp(34px,5vw,64px);font-weight:1000;color:#e32626;text-shadow:3px 3px #ffd84d;margin:7px}
 .goalFlash{animation:flash .35s alternate 6}
 @keyframes flash{from{transform:scale(1)}to{transform:scale(1.12)}}
+
+
+/* V25.98: solo tablet Android/Samsung dentro del módulo Partido Final */
+@media (min-width:761px) and (hover:none) and (pointer:coarse){
+  .wrap{width:99vw;max-width:none;margin-top:4px}
+  h1{font-size:clamp(36px,4.1vw,52px)}
+  .subtitle{font-size:clamp(18px,2vw,25px)}
+  .score{font-size:clamp(18px,1.9vw,24px);padding:10px 18px}
+  .question{font-size:clamp(22px,2.5vw,30px);padding:12px 15px}
+  .msg{font-size:clamp(18px,1.9vw,24px)}
+  .opt,.ctl{font-size:clamp(18px,1.9vw,24px);padding:12px 18px;min-height:54px}
+}
 </style>
 </head>
 <body>
@@ -114,7 +126,11 @@ function speak(text,done){
     const u=new SpeechSynthesisUtterance(text);
     u.lang='es-US'; u.rate=.72; u.pitch=1.05;
     const v=chooseVoice(); if(v)u.voice=v;
-    u.onend=()=>done&&done();
+    let completed=false;
+    const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    const finish=()=>{if(completed)return;completed=true;clearTimeout(watchdog);if(done)done()};
+    u.onend=finish; u.onerror=finish;
+    const watchdog=setTimeout(finish,Math.min(42000,Math.max(8000,2500+String(text||'').length*(isiOS?240:150))));
     speechSynthesis.speak(u);
   }catch(e){if(done)done()}
 }
@@ -211,6 +227,18 @@ $('startBtn').onclick=startGame;
 $('repeatBtn').onclick=()=>{if(lastSpeech)speak(lastSpeech)};
 $('resetBtn').onclick=resetScene;
 resetScene();
+</script>
+
+<style id="v2599-final-device-isolation">
+html.device-samsung-tablet .wrap{width:99.5vw;max-width:none;margin-top:4px}
+html.device-samsung-tablet .score{font-size:24px;padding:11px 19px}
+html.device-samsung-tablet .question{font-size:30px;padding:13px 16px}
+html.device-samsung-tablet .msg{font-size:22px}
+html.device-samsung-tablet .opt,html.device-samsung-tablet .ctl{font-size:23px;padding:13px 19px;min-height:58px}
+html.device-samsung-tablet .fieldWrap{padding:6px}
+</style>
+<script id="v2599-final-device-script">
+(function(){var ua=navigator.userAgent||'';if(/Android/i.test(ua)&&(!/Mobile/i.test(ua)||Math.min(screen.width||0,screen.height||0)>=600)&&(/SM-T|SM-X|SamsungBrowser/i.test(ua)))document.documentElement.classList.add('device-samsung-tablet');})();
 </script>
 </body>
 </html>
