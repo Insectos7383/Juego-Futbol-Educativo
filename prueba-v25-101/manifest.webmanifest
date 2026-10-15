@@ -1,0 +1,21 @@
+{
+  "name": "Mi Fútbol Club - Mi Juego de Fútbol",
+  "short_name": "Mi Fútbol Club",
+  "start_url": "./?v=25.101",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#c9efff",
+  "theme_color": "#c9efff",
+  "icons": [
+    {
+      "src": "mi-futbol-club-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "mi-futbol-club-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
