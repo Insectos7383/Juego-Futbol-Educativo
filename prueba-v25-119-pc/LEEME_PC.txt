@@ -1,0 +1,18 @@
+MI FÚTBOL CLUB — V25.119 PARA PC
+================================
+Este paquete contiene las ilustraciones originales aportadas por el usuario.
+La página principal es index.html y contiene el módulo 'Conoce el campo de juego' con sus nueve secciones.
+
+1. Extraiga TODO el ZIP a una carpeta.
+2. Abra index.html con Chrome o Edge desde esa carpeta.
+3. Conserve las imágenes y los demás archivos al mismo nivel que index.html.
+4. Pruebe las secciones y el audio antes de copiar los archivos a GitHub.
+5. No sustituya su versión original de PC hasta completar las pruebas.
+
+El HTML s1_aprobado_v49.html se incluye como archivo independiente de referencia.
+El archivo partido_final_v12.html es la versión original aportada, sin modificaciones.
+
+IMPORTANTE: Las nueve imágenes del módulo 'Conoce el campo de juego' están incorporadas
+dentro de index.html. Los demás juegos utilizan algunas imágenes externas contenidas aquí.
+
+Esta versión está pendiente de prueba funcional en la PC; que compile no garantiza su funcionamiento.
