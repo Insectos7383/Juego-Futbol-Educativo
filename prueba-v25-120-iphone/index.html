@@ -2001,8 +2001,8 @@ try {
   #familyCredit{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(11,34,57,.94);color:#fff;text-align:center;font:700 17px/1.3 Arial,sans-serif;padding:9px 10px calc(9px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.22);}
   @media(max-width:600px){#familyCredit{font-size:15px;padding-left:6px;padding-right:6px;} body{padding-bottom:54px !important;}}
 </style>
-<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.120-IPHONE</span></div>
-<!-- V25.120-IPHONE - S1 V49 aprobado + Partido Final V12 aprobado + ajuste Samsung/Android tablet -->
+<div id="familyCredit" role="contentinfo">Creado por la familia Viera Pina Fraguada para David y sus amigos ⚽ <span style="font-size:.78em;font-weight:600;white-space:nowrap;">V25.121-IPHONE</span></div>
+<!-- V25.121-IPHONE - S1 V49 aprobado + Partido Final V12 aprobado + ajuste Samsung/Android tablet -->
 <style id="v2570-welcome-style">
 #v2570Welcome{
  position:fixed;inset:0;z-index:200000;background:rgba(8,30,50,.76);
@@ -2197,7 +2197,7 @@ try {
   });
 })();
 </script>
-<!-- V25.120-IPHONE - Partido Final V12 aprobado integrado como módulo independiente -->
+<!-- V25.121-IPHONE - Partido Final V12 aprobado integrado como módulo independiente -->
 <style id="v2593-final-v12-integrated-style">
 #finalV12Host{display:none;width:96vw;max-width:1240px;margin:4px auto 70px;padding:0 4px;box-sizing:border-box}
 #finalV12Frame{display:block;width:100%;max-width:none;height:980px;border:0;border-radius:14px;background:#d7f1ff;box-sizing:border-box}
@@ -2268,7 +2268,7 @@ try {
 </script>
 
 
-<!-- V25.120-IPHONE - perfil exclusivo iPhone -->
+<!-- V25.121-IPHONE - perfil exclusivo iPhone -->
 <script id="v25104-iphone-profile">
 (function(){
   var root=document.documentElement;
@@ -2288,7 +2288,7 @@ button:active,.answer:active,.finalOption:active,.kickChoice:active{transform:sc
 .v2571Btn{min-height:50px;font-size:clamp(18px,5vw,22px)}
 </style>
 <style id="v25104-iphone-test-marker-style">#iphoneTestMarker{position:fixed;top:max(6px,env(safe-area-inset-top));right:8px;z-index:250000;background:#fff7c2;border:2px solid #0b3d91;border-radius:8px;padding:5px 9px;font:700 12px Arial;color:#0b3d91;pointer-events:none}</style>
-<script id="v25104-iphone-test-marker">window.addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='iphoneTestMarker';d.textContent='PRUEBA V25.120-IPHONE';document.body.appendChild(d);},{once:true});</script>
+<script id="v25104-iphone-test-marker">window.addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='iphoneTestMarker';d.textContent='PRUEBA V25.121-IPHONE';document.body.appendChild(d);},{once:true});</script>
 <script id="v25104-iphone-touch-feedback">
 (function(){
   function mark(e){var el=e.target&&e.target.closest&&e.target.closest('button,.answer,.finalOption,.kickChoice,.player,.posPlayer');if(!el)return;el.classList.add('iphone-touching');setTimeout(function(){el.classList.remove('iphone-touching')},180)}
@@ -2314,34 +2314,98 @@ const ccIntro5='Ahora conoceremos las líneas de banda. Son las líneas largas q
 const ccPaso5='Estas son las líneas de banda. Están por los lados de la cancha. Cuando la pelota sale por aquí, el juego continúa con un saque de banda con las manos. Cuando hayas terminado, presiona el rectángulo gris TERMINADO.'; const ccFin5='Muy bien. Terminaste la sección de las líneas de banda. Ahora presiona el rectángulo azul SIGUIENTE SECCIÓN.'; let ccUltimo5='intro';
 const ccPaso3a='Este es el Lado B.'; const ccPaso3b='Este es el lado del equipo contrario, donde nuestro equipo intentará marcar goles. Cuando hayas terminado, presiona el rectángulo gris TERMINADO.'; const ccFin3='Muy bien. Terminaste la sección del Lado B. Ahora presiona el rectángulo azul SIGUIENTE SECCIÓN.';
 let ccUltimo1='intro',ccUltimo2='intro',ccUltimo3='intro',ccToken=0;
+/* V25.121 iPhone: narración pausada y encadenada por finalización real de voz.
+   Mantiene intacta la selección de voz femenina del juego. */
+const CC_RATE = 0.70;
+let ccVozPendiente = [];
+let ccVozActiva = null;
+let ccVozTimer = null;
 function ccVoz(){try{return bairoaVoice||selectBairoaVoice()||null}catch(e){return null}}
-function ccUtter(t){const u=new SpeechSynthesisUtterance(t),v=ccVoz();if(v){u.voice=v;u.lang=v.lang||'es-US'}else u.lang='es-US';u.rate=.88;u.pitch=1;u.volume=1;return u}
-function ccStop(){ccToken++;try{speechSynthesis.cancel()}catch(e){}}
-function ccHablar(t,id,done){const el=document.getElementById(id);if(el)el.textContent=t;if(!('speechSynthesis' in window)){if(done)done();return}const token=++ccToken;try{speechSynthesis.cancel();if(speechSynthesis.paused)speechSynthesis.resume();const u=ccUtter(t);let ended=false;const finish=()=>{if(ended||token!==ccToken)return;ended=true;if(done)done()};u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);setTimeout(finish,Math.min(15000,Math.max(4500,String(t).length*75)))}catch(e){if(done)done()}}
-function openCancha(){ccStop();showScreen('canchaScreen');document.getElementById('cc2').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc4').classList.remove('active');document.getElementById('cc5').classList.remove('active');document.getElementById('cc6').classList.remove('active');document.getElementById('cc7').classList.remove('active');document.getElementById('cc8').classList.remove('active');document.getElementById('cc9').classList.remove('active');document.getElementById('cc1').classList.add('active');ccUltimo1='intro';document.getElementById('ccStatus1').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro1,'ccStatus1'),120)}
+function ccUtter(t){
+ const u=new SpeechSynthesisUtterance(t),v=ccVoz();
+ if(v){u.voice=v;u.lang=v.lang||'es-US'}else u.lang='es-US';
+ u.rate=CC_RATE;u.pitch=1;u.volume=1;return u;
+}
+function ccStop(){
+ ccToken++;
+ ccVozPendiente=[];
+ if(ccVozTimer){clearTimeout(ccVozTimer);ccVozTimer=null}
+ if(ccVozActiva){ccVozActiva.onend=null;ccVozActiva.onerror=null;ccVozActiva=null}
+ try{speechSynthesis.cancel()}catch(e){}
+}
+function ccFrases(texto){
+ // Dividir textos extensos: Safari puede cortar mensajes largos.
+ const partes=String(texto).match(/[^.!?¡¿]+[.!?]+|[^.!?¡¿]+$/g)||[String(texto)];
+ const frases=[];
+ for(const p of partes){
+  const t=p.trim();if(!t)continue;
+  if(t.length<=125){frases.push(t);continue}
+  const palabras=t.split(/\s+/);let trozo='';
+  for(const palabra of palabras){
+   if(trozo && (trozo+' '+palabra).length>100){frases.push(trozo);trozo=palabra}
+   else trozo+=(trozo?' ':'')+palabra;
+  }
+  if(trozo)frases.push(trozo);
+ }
+ return frases;
+}
+function ccHablar(t,id,done){
+ const el=document.getElementById(id);
+ if(el)el.textContent=t;
+ ccStop();
+ if(!('speechSynthesis' in window)){if(done)done();return}
+ const token=ccToken;
+ ccVozPendiente=ccFrases(t);
+ let finalizado=false;
+ const finalizar=()=>{if(finalizado||token!==ccToken)return;finalizado=true;if(done)done()};
+ const siguiente=()=>{
+  if(token!==ccToken)return;
+  if(!ccVozPendiente.length){ccVozActiva=null;finalizar();return}
+  const frase=ccVozPendiente.shift();const u=ccUtter(frase);
+  ccVozActiva=u;
+  let hecho=false;
+  const continuar=()=>{
+   if(hecho||token!==ccToken)return;hecho=true;
+   ccVozActiva=null;
+   ccVozTimer=setTimeout(()=>{ccVozTimer=null;siguiente()},280);
+  };
+  u.onend=continuar;
+  u.onerror=(e)=>{
+   if(token!==ccToken)return;
+   // No saltar silenciosamente partes de la explicación al fallar la voz.
+   ccVozPendiente=[];ccVozActiva=null;
+   if(el)el.textContent=t+'  🔊 Si no se escucha, presiona REPETIR.';
+   finalizar();
+  };
+  try{if(speechSynthesis.paused)speechSynthesis.resume();speechSynthesis.speak(u)}
+  catch(e){ccVozPendiente=[];if(el)el.textContent=t+'  🔊 Presiona REPETIR.';finalizar()}
+ };
+ siguiente();
+}
+function openCancha(){ccStop();showScreen('canchaScreen');document.getElementById('cc2').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc4').classList.remove('active');document.getElementById('cc5').classList.remove('active');document.getElementById('cc6').classList.remove('active');document.getElementById('cc7').classList.remove('active');document.getElementById('cc8').classList.remove('active');document.getElementById('cc9').classList.remove('active');document.getElementById('cc1').classList.add('active');ccUltimo1='intro';document.getElementById('ccStatus1').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro1,'ccStatus1')}
 function ccComenzar1(){ccUltimo1='paso';ccHablar(ccPaso1,'ccStatus1')}
 function ccRepetir1(){if(ccUltimo1==='paso')ccHablar(ccPaso1,'ccStatus1');else if(ccUltimo1==='terminado')ccHablar(ccFin1,'ccStatus1');else ccHablar(ccIntro1,'ccStatus1')}
 function ccTerminado1(){ccUltimo1='terminado';ccHablar(ccFin1,'ccStatus1')}
-function ccIrA2(){ccStop();document.getElementById('cc1').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc2').classList.add('active');ccUltimo2='intro';document.getElementById('ccStatus2').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro2,'ccStatus2'),120)}
-function ccComenzar2(){ccUltimo2='paso';document.getElementById('ccStatus2').textContent=ccPaso2a+' '+ccPaso2b;if(!('speechSynthesis' in window))return;ccStop();const token=++ccToken;try{if(speechSynthesis.paused)speechSynthesis.resume();const a=ccUtter(ccPaso2a);let moved=false;const segunda=()=>{if(moved||token!==ccToken)return;moved=true;setTimeout(()=>{if(token!==ccToken)return;try{speechSynthesis.speak(ccUtter(ccPaso2b))}catch(e){}},700)};a.onend=segunda;a.onerror=segunda;speechSynthesis.speak(a);setTimeout(segunda,4500)}catch(e){}}
+function ccIrA2(){ccStop();document.getElementById('cc1').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc2').classList.add('active');ccUltimo2='intro';document.getElementById('ccStatus2').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro2,'ccStatus2')}
+function ccComenzar2(){ccUltimo2='paso';ccHablar(ccPaso2a+' '+ccPaso2b,'ccStatus2')}
 function ccRepetir2(){if(ccUltimo2==='paso')ccComenzar2();else if(ccUltimo2==='terminado')ccHablar(ccFin2,'ccStatus2');else ccHablar(ccIntro2,'ccStatus2')}
 function ccTerminado2(){ccUltimo2='terminado';ccHablar(ccFin2,'ccStatus2')}
-function ccIrA3(){ccStop();document.getElementById('cc2').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc3').classList.add('active');ccUltimo3='intro';document.getElementById('ccStatus3').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro3,'ccStatus3'),120)}
-function ccComenzar3(){ccUltimo3='paso';document.getElementById('ccStatus3').textContent=ccPaso3a+' '+ccPaso3b;if(!('speechSynthesis' in window))return;ccStop();const token=++ccToken;try{if(speechSynthesis.paused)speechSynthesis.resume();const a=ccUtter(ccPaso3a);let moved=false;const segunda=()=>{if(moved||token!==ccToken)return;moved=true;setTimeout(()=>{if(token!==ccToken)return;try{speechSynthesis.speak(ccUtter(ccPaso3b))}catch(e){}},700)};a.onend=segunda;a.onerror=segunda;speechSynthesis.speak(a);setTimeout(segunda,4500)}catch(e){}}
+function ccIrA3(){ccStop();document.getElementById('cc2').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc3').classList.add('active');ccUltimo3='intro';document.getElementById('ccStatus3').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro3,'ccStatus3')}
+function ccComenzar3(){ccUltimo3='paso';ccHablar(ccPaso3a+' '+ccPaso3b,'ccStatus3')}
 function ccRepetir3(){if(ccUltimo3==='paso')ccComenzar3();else if(ccUltimo3==='terminado')ccHablar(ccFin3,'ccStatus3');else ccHablar(ccIntro3,'ccStatus3')}
 function ccTerminado3(){ccUltimo3='terminado';ccHablar(ccFin3,'ccStatus3')}
-function ccIrA2Desde3(){ccStop();document.getElementById('cc3').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc2').classList.add('active');ccUltimo2='intro';document.getElementById('ccStatus2').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro2,'ccStatus2'),120)}
-function ccIrA1(){ccStop();document.getElementById('cc2').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc4').classList.remove('active');document.getElementById('cc1').classList.add('active');ccUltimo1='intro';document.getElementById('ccStatus1').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro1,'ccStatus1'),120)}
-function ccIrA4(){ccStop();document.getElementById('cc3').classList.remove('active');document.getElementById('cc5').classList.remove('active');document.getElementById('cc4').classList.add('active');ccUltimo4='intro';document.getElementById('ccStatus4').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro4,'ccStatus4'),120)}
+function ccIrA2Desde3(){ccStop();document.getElementById('cc3').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc2').classList.add('active');ccUltimo2='intro';document.getElementById('ccStatus2').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro2,'ccStatus2')}
+function ccIrA1(){ccStop();document.getElementById('cc2').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc4').classList.remove('active');document.getElementById('cc1').classList.add('active');ccUltimo1='intro';document.getElementById('ccStatus1').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro1,'ccStatus1')}
+function ccIrA4(){ccStop();document.getElementById('cc3').classList.remove('active');document.getElementById('cc5').classList.remove('active');document.getElementById('cc4').classList.add('active');ccUltimo4='intro';document.getElementById('ccStatus4').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro4,'ccStatus4')}
 function ccComenzar4(){ccUltimo4='paso';ccHablar(ccPaso4,'ccStatus4')}
 function ccRepetir4(){ccHablar(ccUltimo4==='paso'?ccPaso4:ccUltimo4==='terminado'?ccFin4:ccIntro4,'ccStatus4')}
 function ccTerminado4(){ccUltimo4='terminado';ccHablar(ccFin4,'ccStatus4')}
-function ccIrA3Desde4(){ccStop();document.getElementById('cc4').classList.remove('active');document.getElementById('cc3').classList.add('active');ccUltimo3='intro';document.getElementById('ccStatus3').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro3,'ccStatus3'),120)}
-function ccIrA5(){ccStop();document.getElementById('cc4').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc5').classList.add('active');ccUltimo5='intro';document.getElementById('ccStatus5').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro5,'ccStatus5'),120)}
+function ccIrA3Desde4(){ccStop();document.getElementById('cc4').classList.remove('active');document.getElementById('cc3').classList.add('active');ccUltimo3='intro';document.getElementById('ccStatus3').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro3,'ccStatus3')}
+function ccIrA5(){ccStop();document.getElementById('cc4').classList.remove('active');document.getElementById('cc3').classList.remove('active');document.getElementById('cc1').classList.remove('active');document.getElementById('cc5').classList.add('active');ccUltimo5='intro';document.getElementById('ccStatus5').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro5,'ccStatus5')}
 function ccComenzar5(){ccUltimo5='paso';ccHablar(ccPaso5,'ccStatus5')}
 function ccRepetir5(){ccHablar(ccUltimo5==='paso'?ccPaso5:ccUltimo5==='terminado'?ccFin5:ccIntro5,'ccStatus5')}
 function ccTerminado5(){ccUltimo5='terminado';ccHablar(ccFin5,'ccStatus5')}
-function ccIrA4Desde5(){ccStop();document.getElementById('cc5').classList.remove('active');document.getElementById('cc4').classList.add('active');ccUltimo4='intro';document.getElementById('ccStatus4').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro4,'ccStatus4'),120)}
+function ccIrA4Desde5(){ccStop();document.getElementById('cc5').classList.remove('active');document.getElementById('cc4').classList.add('active');ccUltimo4='intro';document.getElementById('ccStatus4').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro4,'ccStatus4')}
 
 const ccIntro6='Ahora conoceremos nuestra línea de meta. Cuando estés listo para comenzar, presiona el rectángulo verde COMENZAR.';
 const ccPaso6='Ahora conoceremos nuestra línea de meta. Esta es la línea que está frente a la portería y va de extremo a extremo del campo. Cuando hayas terminado, presiona el rectángulo gris TERMINADO.';
@@ -2359,7 +2423,7 @@ function ccTerminado6(){ccUltimo6='terminado';ccHablar(ccFin6,'ccStatus6')}
 function ccComenzar7(){ccUltimo7='paso';ccHablar(ccPaso7,'ccStatus7')}
 function ccRepetir7(){ccHablar(ccUltimo7==='paso'?ccPaso7:ccUltimo7==='terminado'?ccFin7:ccIntro7,'ccStatus7')}
 function ccTerminado7(){ccUltimo7='terminado';ccHablar(ccFin7,'ccStatus7')}
-function ccIrA5Desde6(){ccStop();document.getElementById('cc6').classList.remove('active');document.getElementById('cc5').classList.add('active');ccUltimo5='intro';document.getElementById('ccStatus5').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);setTimeout(()=>ccHablar(ccIntro5,'ccStatus5'),120)}
+function ccIrA5Desde6(){ccStop();document.getElementById('cc6').classList.remove('active');document.getElementById('cc5').classList.add('active');ccUltimo5='intro';document.getElementById('ccStatus5').textContent='Presiona el rectángulo verde para comenzar.';window.scrollTo(0,0);ccHablar(ccIntro5,'ccStatus5')}
 function ccIrA6Desde7(){ccMostrarNueva(6)}
 const ccIntro8='Ahora conoceremos el círculo central de la cancha. En el punto del centro se coloca la pelota para comenzar el partido y para reanudarlo después de un gol. Cuando estés listo, presiona el rectángulo verde COMENZAR.';
 const ccPaso8='Este es el círculo central. La pelota se coloca sobre el punto del centro para hacer el saque inicial al comenzar cada tiempo. También se hace un saque desde este punto después de que uno de los equipos marca un gol. Cuando hayas terminado, presiona el rectángulo gris TERMINADO.';

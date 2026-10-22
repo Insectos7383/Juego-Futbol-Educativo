@@ -1,0 +1,4 @@
+V25.121-iPhone — Prueba de corrección de voz en Conoce el Campo de Juego.
+Voz de lecciones a velocidad 0.70, frases cortas, espera al final de cada frase; eliminado el temporizador que interrumpía Lado A y Lado B.
+Conservados los archivos originales, las imágenes aprobadas y las demás actividades.
+No sustituir la versión de PC V25.119.
